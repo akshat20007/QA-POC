@@ -31,7 +31,7 @@ matching this schema:
   "priority": "high | medium | low",
   "category": "happy-path | edge-case | negative",
   "steps": [
-    { "type": "given | when | then", "action": "string", "target_hint": "visible text or role, e.g. 'button: Login'" }
+    { "type": "given | when | then", "action": "string", "target_hint": "visible text or role, e.g. 'button: Login'", "value": "string, only for fill-type actions" }
   ]
 }
 
@@ -46,6 +46,9 @@ Rules:
   Playwright locator. Fall back to visible text only if no clear role applies.
 - "action" must describe what to do in a few words (e.g. "fill username", "click login button",
   "assert error message visible"). Keep it short and unambiguous.
+- "value" must be included whenever "action" is a fill-type action (filling in a text field), and must
+  contain the exact realistic data to type, drawn from the story (e.g. "standard_user", "secret_sauce",
+  "wrong_user"). Omit "value" entirely for non-fill actions (clicks, navigation, assertions).
 """
 
 JSON_SCHEMA = {
@@ -62,6 +65,7 @@ JSON_SCHEMA = {
                     "type": {"type": "string", "enum": ["given", "when", "then"]},
                     "action": {"type": "string"},
                     "target_hint": {"type": "string"},
+                    "value": {"type": "string"},
                 },
                 "required": ["type", "action", "target_hint"],
             },

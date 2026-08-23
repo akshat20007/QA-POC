@@ -1,14 +1,14 @@
 
 === add_to_cart.txt ===
 {
-  "name": "Add product to cart",
+  "name": "Add product to cart and verify cart contents",
   "priority": "high",
   "category": "happy-path",
   "steps": [
     {
       "type": "given",
-      "action": "view products page",
-      "target_hint": "text: Products"
+      "action": "navigate to products page",
+      "target_hint": "url: /inventory.html"
     },
     {
       "type": "when",
@@ -17,7 +17,7 @@
     },
     {
       "type": "then",
-      "action": "verify cart badge shows 1",
+      "action": "assert cart badge shows 1",
       "target_hint": "text: 1"
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "type": "then",
-      "action": "verify product is listed in cart",
+      "action": "assert product is listed in cart",
       "target_hint": "text: Sauce Labs Backpack"
     }
   ]
@@ -35,7 +35,7 @@
 
 === login_invalid.txt ===
 {
-  "name": "Invalid login attempt shows error message",
+  "name": "Invalid login attempt shows error and blocks access",
   "priority": "high",
   "category": "negative",
   "steps": [
@@ -46,13 +46,15 @@
     },
     {
       "type": "when",
-      "action": "enter invalid username",
-      "target_hint": "textbox: Username"
+      "action": "fill username",
+      "target_hint": "textbox: Username",
+      "value": "wrong_user"
     },
     {
       "type": "when",
-      "action": "enter invalid password",
-      "target_hint": "textbox: Password"
+      "action": "fill password",
+      "target_hint": "textbox: Password",
+      "value": "wrong_pass"
     },
     {
       "type": "when",
@@ -76,17 +78,19 @@
     {
       "type": "given",
       "action": "navigate to login page",
-      "target_hint": "url: https://www.saucedemo.com/"
+      "target_hint": "https://www.saucedemo.com/"
     },
     {
       "type": "when",
       "action": "fill username",
-      "target_hint": "textbox: Username"
+      "target_hint": "textbox: Username",
+      "value": "standard_user"
     },
     {
       "type": "when",
       "action": "fill password",
-      "target_hint": "textbox: Password"
+      "target_hint": "textbox: Password",
+      "value": "secret_sauce"
     },
     {
       "type": "when",
@@ -96,7 +100,7 @@
     {
       "type": "then",
       "action": "assert products page title visible",
-      "target_hint": "text: Products"
+      "target_hint": "Products"
     }
   ]
 }
