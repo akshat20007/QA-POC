@@ -12,6 +12,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 
 MODEL = "gemini-flash-lite-latest"
@@ -115,8 +116,10 @@ def main() -> None:
             test_case = generate_test_case(client, story_text)
             log(json.dumps(test_case, indent=2))
             passed += 1
-        except Exception as exc:  # parse failure or API error
-            log(f"FAILED to produce valid JSON: {exc}")
+        except genai_errors.APIError as exc:
+            log(f"FAILED - API/network error (not a JSON problem): {exc}")
+        except json.JSONDecodeError as exc:
+            log(f"FAILED - model did not return valid JSON: {exc}")
 
     log(f"\n=== Summary: {passed}/{len(story_files)} stories produced valid JSON ===")
 
