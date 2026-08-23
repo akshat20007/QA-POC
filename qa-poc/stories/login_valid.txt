@@ -1,0 +1,6 @@
+As a registered Sauce Demo user, I want to log in with valid credentials (username "standard_user", password "secret_sauce") so that I can access the products page.
+
+Acceptance criteria:
+- Given I am on the Sauce Demo login page (https://www.saucedemo.com/)
+- When I enter the valid username and password and click the Login button
+- Then I should be redirected to the products/inventory page and see the page title "Products"

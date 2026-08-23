@@ -1,0 +1,104 @@
+
+=== add_to_cart.txt ===
+{
+  "name": "Add product to cart",
+  "priority": "high",
+  "category": "happy-path",
+  "steps": [
+    {
+      "type": "given",
+      "action": "view products page",
+      "target_hint": "text: Products"
+    },
+    {
+      "type": "when",
+      "action": "click add to cart button",
+      "target_hint": "button: Add to cart"
+    },
+    {
+      "type": "then",
+      "action": "verify cart badge shows 1",
+      "target_hint": "text: 1"
+    },
+    {
+      "type": "when",
+      "action": "click cart icon",
+      "target_hint": "link: 1"
+    },
+    {
+      "type": "then",
+      "action": "verify product is listed in cart",
+      "target_hint": "text: Sauce Labs Backpack"
+    }
+  ]
+}
+
+=== login_invalid.txt ===
+{
+  "name": "Invalid login attempt shows error message",
+  "priority": "high",
+  "category": "negative",
+  "steps": [
+    {
+      "type": "given",
+      "action": "navigate to login page",
+      "target_hint": "https://www.saucedemo.com/"
+    },
+    {
+      "type": "when",
+      "action": "enter invalid username",
+      "target_hint": "textbox: Username"
+    },
+    {
+      "type": "when",
+      "action": "enter invalid password",
+      "target_hint": "textbox: Password"
+    },
+    {
+      "type": "when",
+      "action": "click login button",
+      "target_hint": "button: Login"
+    },
+    {
+      "type": "then",
+      "action": "assert error message visible",
+      "target_hint": "Epic sadface: Username and password do not match any user in this service"
+    }
+  ]
+}
+
+=== login_valid.txt ===
+{
+  "name": "Successful login with valid credentials",
+  "priority": "high",
+  "category": "happy-path",
+  "steps": [
+    {
+      "type": "given",
+      "action": "navigate to login page",
+      "target_hint": "url: https://www.saucedemo.com/"
+    },
+    {
+      "type": "when",
+      "action": "fill username",
+      "target_hint": "textbox: Username"
+    },
+    {
+      "type": "when",
+      "action": "fill password",
+      "target_hint": "textbox: Password"
+    },
+    {
+      "type": "when",
+      "action": "click login button",
+      "target_hint": "button: Login"
+    },
+    {
+      "type": "then",
+      "action": "assert products page title visible",
+      "target_hint": "text: Products"
+    }
+  ]
+}
+
+=== Summary: 3/3 stories produced valid JSON ===

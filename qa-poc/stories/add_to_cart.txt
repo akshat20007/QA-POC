@@ -1,0 +1,8 @@
+As a logged-in Sauce Demo user, I want to add a product to my cart so that I can purchase it later.
+
+Acceptance criteria:
+- Given I am logged in to Sauce Demo (username "standard_user", password "secret_sauce") and viewing the products page
+- When I click the "Add to cart" button for the product "Sauce Labs Backpack"
+- Then the cart icon badge should update to show "1" item
+- And when I click the cart icon
+- Then I should see "Sauce Labs Backpack" listed in the cart page

@@ -1,0 +1,6 @@
+As a Sauce Demo visitor, I want to be blocked from logging in when I enter an invalid username/password combination, so that unauthorized access is prevented.
+
+Acceptance criteria:
+- Given I am on the Sauce Demo login page (https://www.saucedemo.com/)
+- When I enter an invalid username (e.g. "wrong_user") and an invalid password (e.g. "wrong_pass") and click the Login button
+- Then I should remain on the login page and see an error message indicating the username and password do not match
