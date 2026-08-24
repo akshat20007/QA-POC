@@ -119,6 +119,8 @@ def main() -> None:
         try:
             test_case = generate_test_case(client, story_text)
             log(json.dumps(test_case, indent=2))
+            json_path = OUTPUT_DIR / f"{story_file.stem}.json"
+            json_path.write_text(json.dumps(test_case, indent=2), encoding="utf-8")
             passed += 1
         except genai_errors.APIError as exc:
             log(f"FAILED - API/network error (not a JSON problem): {exc}")

@@ -7,7 +7,17 @@ import type {
   TranslationResult,
 } from './types.js';
 
-const ROLE_PREFIXES = ['button', 'textbox', 'link', 'checkbox'];
+const ROLE_PREFIXES = [
+  'button',
+  'textbox',
+  'link',
+  'checkbox',
+  'heading',
+  'radio',
+  'combobox',
+  'listitem',
+  'img',
+];
 
 class StepTranslationError extends Error {}
 

@@ -17,8 +17,8 @@
     },
     {
       "type": "then",
-      "action": "assert cart badge shows 1",
-      "target_hint": "text: 1"
+      "action": "assert cart badge shows one item",
+      "target_hint": "span: 1"
     },
     {
       "type": "when",
@@ -27,15 +27,15 @@
     },
     {
       "type": "then",
-      "action": "assert product is listed in cart",
-      "target_hint": "text: Sauce Labs Backpack"
+      "action": "assert product is visible in cart",
+      "target_hint": "link: Sauce Labs Backpack"
     }
   ]
 }
 
 === login_invalid.txt ===
 {
-  "name": "Invalid login attempt shows error and blocks access",
+  "name": "Login with invalid credentials",
   "priority": "high",
   "category": "negative",
   "steps": [
@@ -64,7 +64,7 @@
     {
       "type": "then",
       "action": "assert error message visible",
-      "target_hint": "Epic sadface: Username and password do not match any user in this service"
+      "target_hint": "heading: Epic sadface: Username and password do not match any user in this service"
     }
   ]
 }
@@ -100,7 +100,7 @@
     {
       "type": "then",
       "action": "assert products page title visible",
-      "target_hint": "Products"
+      "target_hint": "text: Products"
     }
   ]
 }

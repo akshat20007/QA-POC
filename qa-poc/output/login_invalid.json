@@ -1,0 +1,34 @@
+{
+  "name": "Login with invalid credentials",
+  "priority": "high",
+  "category": "negative",
+  "steps": [
+    {
+      "type": "given",
+      "action": "navigate to login page",
+      "target_hint": "https://www.saucedemo.com/"
+    },
+    {
+      "type": "when",
+      "action": "fill username",
+      "target_hint": "textbox: Username",
+      "value": "wrong_user"
+    },
+    {
+      "type": "when",
+      "action": "fill password",
+      "target_hint": "textbox: Password",
+      "value": "wrong_pass"
+    },
+    {
+      "type": "when",
+      "action": "click login button",
+      "target_hint": "button: Login"
+    },
+    {
+      "type": "then",
+      "action": "assert error message visible",
+      "target_hint": "heading: Epic sadface: Username and password do not match any user in this service"
+    }
+  ]
+}

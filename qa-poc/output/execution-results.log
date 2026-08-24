@@ -1,0 +1,44 @@
+
+=== add_to_cart — Add product to cart and verify cart contents ===
+Result: FAIL
+  [pass] navigate — selector: goto('/inventory.html')
+  [FAIL] click — locator.click: Error: strict mode violation: getByRole('button', { name: 'Add to cart' }) resolved to 6 elements:
+    1) <button id="add-to-cart-sauce-labs-backpack" name="add-to-cart-sauce-labs-backpack" data-test="add-to-cart-sauce-labs-backpack" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-backpack"]')
+    2) <button id="add-to-cart-sauce-labs-bike-light" name="add-to-cart-sauce-labs-bike-light" data-test="add-to-cart-sauce-labs-bike-light" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bike-light"]')
+    3) <button id="add-to-cart-sauce-labs-bolt-t-shirt" name="add-to-cart-sauce-labs-bolt-t-shirt" data-test="add-to-cart-sauce-labs-bolt-t-shirt" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]')
+    4) <button id="add-to-cart-sauce-labs-fleece-jacket" name="add-to-cart-sauce-labs-fleece-jacket" class="btn btn_primary btn_small btn_inventory " data-test="add-to-cart-sauce-labs-fleece-jacket">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]')
+    5) <button id="add-to-cart-sauce-labs-onesie" name="add-to-cart-sauce-labs-onesie" data-test="add-to-cart-sauce-labs-onesie" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-onesie"]')
+    6) <button class="btn btn_primary btn_small btn_inventory " id="add-to-cart-test.allthethings()-t-shirt-(red)" name="add-to-cart-test.allthethings()-t-shirt-(red)" data-test="add-to-cart-test.allthethings()-t-shirt-(red)">Add to cart</button> aka locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
+
+Call log:
+[2m  - waiting for getByRole('button', { name: 'Add to cart' })[22m
+
+Reason: Step "click" failed after retry: locator.click: Error: strict mode violation: getByRole('button', { name: 'Add to cart' }) resolved to 6 elements:
+    1) <button id="add-to-cart-sauce-labs-backpack" name="add-to-cart-sauce-labs-backpack" data-test="add-to-cart-sauce-labs-backpack" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-backpack"]')
+    2) <button id="add-to-cart-sauce-labs-bike-light" name="add-to-cart-sauce-labs-bike-light" data-test="add-to-cart-sauce-labs-bike-light" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bike-light"]')
+    3) <button id="add-to-cart-sauce-labs-bolt-t-shirt" name="add-to-cart-sauce-labs-bolt-t-shirt" data-test="add-to-cart-sauce-labs-bolt-t-shirt" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]')
+    4) <button id="add-to-cart-sauce-labs-fleece-jacket" name="add-to-cart-sauce-labs-fleece-jacket" class="btn btn_primary btn_small btn_inventory " data-test="add-to-cart-sauce-labs-fleece-jacket">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]')
+    5) <button id="add-to-cart-sauce-labs-onesie" name="add-to-cart-sauce-labs-onesie" data-test="add-to-cart-sauce-labs-onesie" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-onesie"]')
+    6) <button class="btn btn_primary btn_small btn_inventory " id="add-to-cart-test.allthethings()-t-shirt-(red)" name="add-to-cart-test.allthethings()-t-shirt-(red)" data-test="add-to-cart-test.allthethings()-t-shirt-(red)">Add to cart</button> aka locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
+
+Call log:
+[2m  - waiting for getByRole('button', { name: 'Add to cart' })[22m
+
+
+=== login_invalid — Login with invalid credentials ===
+Result: PASS
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByRole('heading', { name: 'Epic sadface: Username and password do not match any user in this service' })
+
+=== login_valid — Successful login with valid credentials ===
+Result: PASS
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Products')
+
+=== Summary: 2/3 test cases PASSED ===

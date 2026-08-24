@@ -1,0 +1,34 @@
+{
+  "name": "Successful login with valid credentials",
+  "priority": "high",
+  "category": "happy-path",
+  "steps": [
+    {
+      "type": "given",
+      "action": "navigate to login page",
+      "target_hint": "https://www.saucedemo.com/"
+    },
+    {
+      "type": "when",
+      "action": "fill username",
+      "target_hint": "textbox: Username",
+      "value": "standard_user"
+    },
+    {
+      "type": "when",
+      "action": "fill password",
+      "target_hint": "textbox: Password",
+      "value": "secret_sauce"
+    },
+    {
+      "type": "when",
+      "action": "click login button",
+      "target_hint": "button: Login"
+    },
+    {
+      "type": "then",
+      "action": "assert products page title visible",
+      "target_hint": "text: Products"
+    }
+  ]
+}

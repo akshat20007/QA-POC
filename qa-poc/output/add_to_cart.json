@@ -1,0 +1,32 @@
+{
+  "name": "Add product to cart and verify cart contents",
+  "priority": "high",
+  "category": "happy-path",
+  "steps": [
+    {
+      "type": "given",
+      "action": "navigate to products page",
+      "target_hint": "url: /inventory.html"
+    },
+    {
+      "type": "when",
+      "action": "click add to cart button",
+      "target_hint": "button: Add to cart"
+    },
+    {
+      "type": "then",
+      "action": "assert cart badge shows one item",
+      "target_hint": "span: 1"
+    },
+    {
+      "type": "when",
+      "action": "click cart icon",
+      "target_hint": "link: 1"
+    },
+    {
+      "type": "then",
+      "action": "assert product is visible in cart",
+      "target_hint": "link: Sauce Labs Backpack"
+    }
+  ]
+}
