@@ -1,6 +1,9 @@
 import type { Page, Locator } from 'playwright';
 import type { LocatorSpec, TranslatedStep } from './types.js';
 
+export const BASE_URL = 'https://www.saucedemo.com';
+export const ACTION_TIMEOUT_MS = 8000;
+
 export function locatorFor(page: Page, spec: LocatorSpec): Locator {
   if (spec.strategy === 'role') {
     return page.getByRole(spec.role as Parameters<Page['getByRole']>[0], { name: spec.name });
@@ -8,7 +11,7 @@ export function locatorFor(page: Page, spec: LocatorSpec): Locator {
   return page.getByText(spec.text);
 }
 
-function describeSelector(spec: LocatorSpec): string {
+export function describeSelector(spec: LocatorSpec): string {
   return spec.strategy === 'role'
     ? `getByRole('${spec.role}', { name: '${spec.name}' })`
     : `getByText('${spec.text}')`;
@@ -53,4 +56,12 @@ export async function withRetry<T>(fn: () => Promise<T>, retries = 1): Promise<T
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return withRetry(fn, retries - 1);
   }
+}
+
+/** Hardcoded valid-login sequence, reused wherever a test needs an already-logged-in session. */
+export async function performValidLogin(page: Page): Promise<void> {
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).fill('standard_user');
+  await page.getByRole('textbox', { name: 'Password' }).fill('secret_sauce');
+  await page.getByRole('button', { name: 'Login' }).click();
 }

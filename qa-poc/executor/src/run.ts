@@ -3,14 +3,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { translateTestCase } from './translator.js';
-import { applyStep, withRetry } from './executor.js';
+import { applyStep, withRetry, performValidLogin, BASE_URL, ACTION_TIMEOUT_MS } from './executor.js';
 import type { TestCase } from './types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = path.join(__dirname, '..', '..', 'output');
 const RESULTS_LOG = path.join(OUTPUT_DIR, 'execution-results.log');
-const BASE_URL = 'https://www.saucedemo.com';
-const ACTION_TIMEOUT_MS = 8000;
 
 interface TestFile {
   fileStem: string;
@@ -66,10 +64,7 @@ async function runTestCase(browser: import('playwright').Browser, testFile: Test
     // Hardcoded exception: add_to_cart's precondition assumes an already-logged-in
     // session, which the translator can't infer. See Phase 3 plan for rationale.
     if (fileStem === 'add_to_cart') {
-      await page.goto('/');
-      await page.getByRole('textbox', { name: 'Username' }).fill('standard_user');
-      await page.getByRole('textbox', { name: 'Password' }).fill('secret_sauce');
-      await page.getByRole('button', { name: 'Login' }).click();
+      await performValidLogin(page);
     }
 
     for (const step of translated) {

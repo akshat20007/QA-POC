@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "tsx --test src/translator.test.ts",
-    "start": "tsx src/run.ts"
+    "start": "tsx src/run.ts",
+    "negative-control": "tsx src/negative-control.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
