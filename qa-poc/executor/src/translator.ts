@@ -33,9 +33,20 @@ function parseUrlHint(hint: string): string | null {
 export function parseTargetHint(hint: string): LocatorSpec {
   const trimmed = hint.trim();
 
-  const roleMatch = new RegExp(`^(${ROLE_PREFIXES.join('|')}):\\s*(.+)$`, 'i').exec(trimmed);
+  const roleMatch = new RegExp(`^(${ROLE_PREFIXES.join('|')}):\\s*(.*)$`, 'i').exec(trimmed);
   if (roleMatch) {
-    return { strategy: 'role', role: roleMatch[1].toLowerCase(), name: roleMatch[2].trim() };
+    const role = roleMatch[1].toLowerCase();
+    const name = roleMatch[2].trim();
+    return name ? { strategy: 'role', role, name } : { strategy: 'role', role };
+  }
+
+  // A bare role keyword with no colon and no name at all - e.g. an unlabeled <select>
+  // that has no accessible name to filter on. Resolves to "the only element with this
+  // role on the page"; multiple matches surface as a Playwright strict-mode violation
+  // at execution time, same as any other ambiguous selector guess.
+  const bareRoleMatch = new RegExp(`^(${ROLE_PREFIXES.join('|')})$`, 'i').exec(trimmed);
+  if (bareRoleMatch) {
+    return { strategy: 'role', role: bareRoleMatch[1].toLowerCase() };
   }
 
   const textMatch = /^text:\s*(.+)$/i.exec(trimmed);
@@ -46,16 +57,23 @@ export function parseTargetHint(hint: string): LocatorSpec {
   return { strategy: 'text', text: trimmed };
 }
 
-type ActionKind = 'navigate' | 'click' | 'fill' | 'checkVisible' | 'checkText';
+type ActionKind = 'navigate' | 'click' | 'fill' | 'select' | 'checkVisible' | 'checkText';
+
+/** True if `word` appears in `text` as a whole word, not as a substring of a longer word
+ * (e.g. "select" must not match inside "selected"). */
+function hasWord(text: string, word: string): boolean {
+  return new RegExp(`\\b${word}\\b`).test(text);
+}
 
 /** Classifies free-text action strings into a small fixed set of kinds via keyword matching. */
 export function classifyAction(action: string): ActionKind | null {
   const a = action.toLowerCase();
-  if (a.includes('navigate')) return 'navigate';
-  if (a.includes('click')) return 'click';
-  if (a.includes('fill') || a.includes('enter')) return 'fill';
-  if (a.includes('visible')) return 'checkVisible';
-  if (a.includes('verify') || a.includes('listed') || a.includes('shows')) return 'checkText';
+  if (hasWord(a, 'navigate')) return 'navigate';
+  if (hasWord(a, 'click')) return 'click';
+  if (hasWord(a, 'fill') || hasWord(a, 'enter')) return 'fill';
+  if (hasWord(a, 'select') || hasWord(a, 'choose')) return 'select';
+  if (hasWord(a, 'visible')) return 'checkVisible';
+  if (hasWord(a, 'verify') || hasWord(a, 'listed') || hasWord(a, 'shows')) return 'checkText';
   return null;
 }
 
@@ -84,6 +102,13 @@ export function translateStep(step: TestStep): TranslatedStep {
     return { kind: 'fill', locator, value: step.value };
   }
 
+  if (kind === 'select') {
+    if (!step.value) {
+      throw new StepTranslationError(`select step "${step.action}" has no value (option) to select`);
+    }
+    return { kind: 'select', locator, value: step.value };
+  }
+
   if (kind === 'click') {
     return { kind: 'click', locator };
   }
@@ -93,7 +118,16 @@ export function translateStep(step: TestStep): TranslatedStep {
   }
 
   // checkText
-  const text = locator.strategy === 'text' ? locator.text : locator.name;
+  let text: string;
+  if (locator.strategy === 'text') {
+    text = locator.text;
+  } else if (locator.name !== undefined) {
+    text = locator.name;
+  } else {
+    throw new StepTranslationError(
+      `checkText step "${step.action}" needs a named target_hint to check for; a nameless role hint has no expected text`,
+    );
+  }
   return { kind: 'checkText', locator, text };
 }
 

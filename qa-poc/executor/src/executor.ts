@@ -6,15 +6,17 @@ export const ACTION_TIMEOUT_MS = 8000;
 
 export function locatorFor(page: Page, spec: LocatorSpec): Locator {
   if (spec.strategy === 'role') {
-    return page.getByRole(spec.role as Parameters<Page['getByRole']>[0], { name: spec.name });
+    const role = spec.role as Parameters<Page['getByRole']>[0];
+    return spec.name !== undefined ? page.getByRole(role, { name: spec.name }) : page.getByRole(role);
   }
   return page.getByText(spec.text);
 }
 
 export function describeSelector(spec: LocatorSpec): string {
-  return spec.strategy === 'role'
-    ? `getByRole('${spec.role}', { name: '${spec.name}' })`
-    : `getByText('${spec.text}')`;
+  if (spec.strategy === 'role') {
+    return spec.name !== undefined ? `getByRole('${spec.role}', { name: '${spec.name}' })` : `getByRole('${spec.role}')`;
+  }
+  return `getByText('${spec.text}')`;
 }
 
 export interface StepResult {
@@ -37,6 +39,9 @@ export async function applyStep(page: Page, step: TranslatedStep): Promise<StepR
       break;
     case 'fill':
       await locator.fill(step.value);
+      break;
+    case 'select':
+      await locator.selectOption({ label: step.value });
       break;
     case 'checkVisible':
     case 'checkText':

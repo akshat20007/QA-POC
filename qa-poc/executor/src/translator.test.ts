@@ -68,6 +68,99 @@ test('unrecognized action is captured as an error, not thrown', () => {
   assert.match(result.errors[0].message, /Unrecognized action/);
 });
 
+test('nameless role hint via trailing colon resolves to a role-only locator', () => {
+  const testCase: TestCase = {
+    name: 'Sort products, colon form',
+    priority: 'medium',
+    category: 'happy-path',
+    steps: [
+      { type: 'when', action: 'select price low to high sort option', target_hint: 'combobox:', value: 'Price (low to high)' },
+    ],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.translated, [
+    { kind: 'select', locator: { strategy: 'role', role: 'combobox' }, value: 'Price (low to high)' },
+  ]);
+});
+
+test('nameless role hint via bare keyword resolves to a role-only locator', () => {
+  const testCase: TestCase = {
+    name: 'Sort products, bare form',
+    priority: 'medium',
+    category: 'happy-path',
+    steps: [
+      { type: 'when', action: 'select price low to high sort option', target_hint: 'combobox', value: 'Price (low to high)' },
+    ],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.translated, [
+    { kind: 'select', locator: { strategy: 'role', role: 'combobox' }, value: 'Price (low to high)' },
+  ]);
+});
+
+test('checkText step with a nameless role hint is captured as an error', () => {
+  const testCase: TestCase = {
+    name: 'Nameless checkText case',
+    priority: 'low',
+    category: 'edge-case',
+    steps: [{ type: 'then', action: 'assert something is listed', target_hint: 'combobox:' }],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.equal(result.translated.length, 0);
+  assert.equal(result.errors.length, 1);
+  assert.match(result.errors[0].message, /needs a named target_hint/);
+});
+
+test('select step: dropdown target_hint plus option value', () => {
+  const testCase: TestCase = {
+    name: 'Sort products',
+    priority: 'medium',
+    category: 'happy-path',
+    steps: [
+      {
+        type: 'when',
+        action: 'select price low to high sort option',
+        target_hint: 'combobox: Sort by',
+        value: 'Price (low to high)',
+      },
+    ],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.translated, [
+    {
+      kind: 'select',
+      locator: { strategy: 'role', role: 'combobox', name: 'Sort by' },
+      value: 'Price (low to high)',
+    },
+  ]);
+});
+
+test('select step missing value is captured as an error', () => {
+  const testCase: TestCase = {
+    name: 'Missing select value case',
+    priority: 'medium',
+    category: 'happy-path',
+    steps: [{ type: 'when', action: 'select sort option', target_hint: 'combobox: Sort by' }],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.equal(result.translated.length, 0);
+  assert.equal(result.errors.length, 1);
+  assert.match(result.errors[0].message, /has no value \(option\) to select/);
+});
+
 test('fill step missing value is captured as an error', () => {
   const testCase: TestCase = {
     name: 'Missing value case',

@@ -1,10 +1,11 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright';
-import { translateTestCase } from './translator.js';
-import { applyStep, withRetry, performValidLogin, BASE_URL, ACTION_TIMEOUT_MS } from './executor.js';
+import { EventEmitter } from 'node:events';
+import { runTestCases } from './runner.js';
+import type { RunnableTestCase } from './runner.js';
 import type { TestCase } from './types.js';
+import type { TestReport } from './apiTypes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = path.join(__dirname, '..', '..', 'output');
@@ -13,21 +14,6 @@ const RESULTS_LOG = path.join(OUTPUT_DIR, 'execution-results.log');
 interface TestFile {
   fileStem: string;
   testCase: TestCase;
-}
-
-interface StepReport {
-  action: string;
-  selectorUsed?: string;
-  outcome: 'pass' | 'fail';
-  error?: string;
-}
-
-interface TestReport {
-  name: string;
-  file: string;
-  outcome: 'PASS' | 'FAIL';
-  steps: StepReport[];
-  reason?: string;
 }
 
 function loadTestFiles(): TestFile[] {
@@ -40,61 +26,10 @@ function loadTestFiles(): TestFile[] {
     }));
 }
 
-async function runTestCase(browser: import('playwright').Browser, testFile: TestFile): Promise<TestReport> {
-  const { fileStem, testCase } = testFile;
-  const { translated, errors } = translateTestCase(testCase);
-
-  if (errors.length > 0) {
-    return {
-      name: testCase.name,
-      file: fileStem,
-      outcome: 'FAIL',
-      steps: [],
-      reason: `Translation failed: ${errors.map((e) => `step ${e.index} ("${e.step.action}"): ${e.message}`).join('; ')}`,
-    };
-  }
-
-  const context = await browser.newContext({ baseURL: BASE_URL });
-  context.setDefaultTimeout(ACTION_TIMEOUT_MS);
-  const page = await context.newPage();
-  const steps: StepReport[] = [];
-  let failReason: string | undefined;
-
-  try {
-    // Hardcoded exception: add_to_cart's precondition assumes an already-logged-in
-    // session, which the translator can't infer. See Phase 3 plan for rationale.
-    if (fileStem === 'add_to_cart') {
-      await performValidLogin(page);
-    }
-
-    for (const step of translated) {
-      try {
-        const { selectorUsed } = await withRetry(() => applyStep(page, step));
-        steps.push({ action: step.kind, selectorUsed, outcome: 'pass' });
-      } catch (exc) {
-        const message = exc instanceof Error ? exc.message : String(exc);
-        steps.push({ action: step.kind, outcome: 'fail', error: message });
-        failReason = `Step "${step.kind}" failed after retry: ${message}`;
-        break;
-      }
-    }
-  } finally {
-    await context.close();
-  }
-
-  return {
-    name: testCase.name,
-    file: fileStem,
-    outcome: failReason ? 'FAIL' : 'PASS',
-    steps,
-    reason: failReason,
-  };
-}
-
 function formatReport(reports: TestReport[]): string {
   const lines: string[] = [];
   for (const r of reports) {
-    lines.push(`\n=== ${r.file} — ${r.name} ===`);
+    lines.push(`\n=== ${r.id} — ${r.name} ===`);
     lines.push(`Result: ${r.outcome}`);
     for (const s of r.steps) {
       const marker = s.outcome === 'pass' ? '  [pass]' : '  [FAIL]';
@@ -115,14 +50,18 @@ async function main() {
   }
 
   const headless = process.env.HEADLESS !== 'false';
-  const browser = await chromium.launch({ headless });
 
-  const reports: TestReport[] = [];
-  for (const testFile of testFiles) {
-    reports.push(await runTestCase(browser, testFile));
-  }
+  // id === fileStem for CLI runs, so the log's "=== <id> — <name> ===" header matches
+  // the pre-refactor "=== <file> — <name> ===" output exactly. Login preconditions are
+  // handled by generate.py's ensure_login_precondition, which prepends real login steps
+  // to the JSON itself - no separate code-level hook needed here.
+  const runnable: RunnableTestCase[] = testFiles.map(({ fileStem, testCase }) => ({
+    id: fileStem,
+    testCase,
+  }));
 
-  await browser.close();
+  const emitter = new EventEmitter();
+  const reports = await runTestCases('cli', runnable, emitter, { headless });
 
   const report = formatReport(reports);
   console.log(report);

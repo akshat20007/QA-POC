@@ -15,13 +15,14 @@ export interface TestCase {
 }
 
 export type LocatorSpec =
-  | { strategy: 'role'; role: string; name: string }
+  | { strategy: 'role'; role: string; name?: string }
   | { strategy: 'text'; text: string };
 
 export type TranslatedStep =
   | { kind: 'navigate'; url: string }
   | { kind: 'click'; locator: LocatorSpec }
   | { kind: 'fill'; locator: LocatorSpec; value: string }
+  | { kind: 'select'; locator: LocatorSpec; value: string }
   | { kind: 'checkVisible'; locator: LocatorSpec }
   | { kind: 'checkText'; locator: LocatorSpec; text: string };
 

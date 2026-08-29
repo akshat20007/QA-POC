@@ -5,6 +5,28 @@
   "steps": [
     {
       "type": "given",
+      "action": "navigate to login page",
+      "target_hint": "url: /"
+    },
+    {
+      "type": "given",
+      "action": "fill username",
+      "target_hint": "textbox: Username",
+      "value": "standard_user"
+    },
+    {
+      "type": "given",
+      "action": "fill password",
+      "target_hint": "textbox: Password",
+      "value": "secret_sauce"
+    },
+    {
+      "type": "given",
+      "action": "click login button",
+      "target_hint": "button: Login"
+    },
+    {
+      "type": "given",
       "action": "navigate to products page",
       "target_hint": "url: /inventory.html"
     },

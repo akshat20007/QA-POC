@@ -11,7 +11,7 @@ Result: FAIL
     6) <button class="btn btn_primary btn_small btn_inventory " id="add-to-cart-test.allthethings()-t-shirt-(red)" name="add-to-cart-test.allthethings()-t-shirt-(red)" data-test="add-to-cart-test.allthethings()-t-shirt-(red)">Add to cart</button> aka locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
 
 Call log:
-[2m  - waiting for getByRole('button', { name: 'Add to cart' })[22m
+  - waiting for getByRole('button', { name: 'Add to cart' })
 
 Reason: Step "click" failed after retry: locator.click: Error: strict mode violation: getByRole('button', { name: 'Add to cart' }) resolved to 6 elements:
     1) <button id="add-to-cart-sauce-labs-backpack" name="add-to-cart-sauce-labs-backpack" data-test="add-to-cart-sauce-labs-backpack" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-backpack"]')
@@ -22,7 +22,7 @@ Reason: Step "click" failed after retry: locator.click: Error: strict mode viola
     6) <button class="btn btn_primary btn_small btn_inventory " id="add-to-cart-test.allthethings()-t-shirt-(red)" name="add-to-cart-test.allthethings()-t-shirt-(red)" data-test="add-to-cart-test.allthethings()-t-shirt-(red)">Add to cart</button> aka locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
 
 Call log:
-[2m  - waiting for getByRole('button', { name: 'Add to cart' })[22m
+  - waiting for getByRole('button', { name: 'Add to cart' })
 
 
 === login_invalid — Login with invalid credentials ===
