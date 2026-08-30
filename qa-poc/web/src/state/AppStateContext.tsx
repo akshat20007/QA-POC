@@ -71,7 +71,13 @@ function reducer(state: AppState, action: Action): AppState {
     case 'GENERATION_COMPLETE': {
       const testCases: IdentifiedTestCase[] = action.results
         .filter((r): r is Extract<GenerateStoryResult, { status: 'ok' }> => r.status === 'ok')
-        .map((r) => ({ id: r.id, testCase: r.testCase }));
+        .flatMap((r) =>
+          r.testCases.map((tc) => ({
+            ...tc,
+            storyIndex: r.storyIndex,
+            storyPreview: r.story.trim().slice(0, 80),
+          })),
+        );
       const generationErrors = action.results
         .filter((r): r is Extract<GenerateStoryResult, { status: 'error' }> => r.status === 'error')
         .map((r) => ({ storyIndex: r.storyIndex, story: r.story, error: r.error, errorType: r.errorType }));
@@ -81,7 +87,7 @@ function reducer(state: AppState, action: Action): AppState {
     case 'UPDATE_TEST_CASE':
       return {
         ...state,
-        testCases: state.testCases.map((tc) => (tc.id === action.id ? { id: tc.id, testCase: action.testCase } : tc)),
+        testCases: state.testCases.map((tc) => (tc.id === action.id ? { ...tc, testCase: action.testCase } : tc)),
       };
 
     case 'ADD_TEST_CASE':

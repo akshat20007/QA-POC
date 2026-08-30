@@ -30,8 +30,8 @@ export function InputStage() {
       <div>
         <h2 className="text-lg font-semibold text-slate-900">1. Describe what you want to test</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Enter one or more user stories in plain English. Each story produces one generated test case you can review
-          and edit before it runs.
+          Enter one or more user stories in plain English. Each story produces several generated test cases —
+          covering the happy path, edge cases, and negative scenarios — that you can review and edit before they run.
         </p>
       </div>
 

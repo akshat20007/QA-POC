@@ -1,34 +1,198 @@
-{
-  "name": "Successful login with valid credentials",
-  "priority": "high",
-  "category": "happy-path",
-  "steps": [
-    {
-      "type": "given",
-      "action": "navigate to login page",
-      "target_hint": "https://www.saucedemo.com/"
-    },
-    {
-      "type": "when",
-      "action": "fill username",
-      "target_hint": "textbox: Username",
-      "value": "standard_user"
-    },
-    {
-      "type": "when",
-      "action": "fill password",
-      "target_hint": "textbox: Password",
-      "value": "secret_sauce"
-    },
-    {
-      "type": "when",
-      "action": "click login button",
-      "target_hint": "button: Login"
-    },
-    {
-      "type": "then",
-      "action": "assert products page title visible",
-      "target_hint": "text: Products"
-    }
-  ]
-}
+[
+  {
+    "name": "Successful login with valid credentials",
+    "priority": "high",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert products page visible",
+        "target_hint": "text: Products"
+      }
+    ]
+  },
+  {
+    "name": "Login fails with invalid password",
+    "priority": "high",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "wrong_password"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "text: Epic sadface: Username and password do not match any user in this service"
+      }
+    ]
+  },
+  {
+    "name": "Login fails with locked out user",
+    "priority": "medium",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "locked_out_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "text: Epic sadface: Sorry, this user has been locked out."
+      }
+    ]
+  },
+  {
+    "name": "Login fails with empty username and password",
+    "priority": "medium",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "given",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "given",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "given",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "text: Epic sadface: Username is required"
+      }
+    ]
+  },
+  {
+    "name": "Login fails with empty password only",
+    "priority": "medium",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "given",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "given",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "given",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "text: Epic sadface: Password is required"
+      }
+    ]
+  }
+]

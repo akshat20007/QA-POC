@@ -1,39 +1,85 @@
 
-=== add_to_cart — Add product to cart and verify cart contents ===
+=== add_to_cart_1 — Add product to cart successfully ===
 Result: FAIL
-  [pass] navigate — selector: goto('/inventory.html')
-  [FAIL] click — locator.click: Error: strict mode violation: getByRole('button', { name: 'Add to cart' }) resolved to 6 elements:
-    1) <button id="add-to-cart-sauce-labs-backpack" name="add-to-cart-sauce-labs-backpack" data-test="add-to-cart-sauce-labs-backpack" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-backpack"]')
-    2) <button id="add-to-cart-sauce-labs-bike-light" name="add-to-cart-sauce-labs-bike-light" data-test="add-to-cart-sauce-labs-bike-light" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bike-light"]')
-    3) <button id="add-to-cart-sauce-labs-bolt-t-shirt" name="add-to-cart-sauce-labs-bolt-t-shirt" data-test="add-to-cart-sauce-labs-bolt-t-shirt" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]')
-    4) <button id="add-to-cart-sauce-labs-fleece-jacket" name="add-to-cart-sauce-labs-fleece-jacket" class="btn btn_primary btn_small btn_inventory " data-test="add-to-cart-sauce-labs-fleece-jacket">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]')
-    5) <button id="add-to-cart-sauce-labs-onesie" name="add-to-cart-sauce-labs-onesie" data-test="add-to-cart-sauce-labs-onesie" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-onesie"]')
-    6) <button class="btn btn_primary btn_small btn_inventory " id="add-to-cart-test.allthethings()-t-shirt-(red)" name="add-to-cart-test.allthethings()-t-shirt-(red)" data-test="add-to-cart-test.allthethings()-t-shirt-(red)">Add to cart</button> aka locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
+Reason: Translation failed: step 0 ("navigate to login page"): navigate step's target_hint is not a URL: "textbox: Username"
 
-Call log:
-  - waiting for getByRole('button', { name: 'Add to cart' })
+=== add_to_cart_2 — Add multiple products to cart ===
+Result: FAIL
+Reason: Translation failed: step 0 ("navigate to products page as standard user"): navigate step's target_hint is not a URL: "textbox: Username"
 
-Reason: Step "click" failed after retry: locator.click: Error: strict mode violation: getByRole('button', { name: 'Add to cart' }) resolved to 6 elements:
-    1) <button id="add-to-cart-sauce-labs-backpack" name="add-to-cart-sauce-labs-backpack" data-test="add-to-cart-sauce-labs-backpack" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-backpack"]')
-    2) <button id="add-to-cart-sauce-labs-bike-light" name="add-to-cart-sauce-labs-bike-light" data-test="add-to-cart-sauce-labs-bike-light" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bike-light"]')
-    3) <button id="add-to-cart-sauce-labs-bolt-t-shirt" name="add-to-cart-sauce-labs-bolt-t-shirt" data-test="add-to-cart-sauce-labs-bolt-t-shirt" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]')
-    4) <button id="add-to-cart-sauce-labs-fleece-jacket" name="add-to-cart-sauce-labs-fleece-jacket" class="btn btn_primary btn_small btn_inventory " data-test="add-to-cart-sauce-labs-fleece-jacket">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]')
-    5) <button id="add-to-cart-sauce-labs-onesie" name="add-to-cart-sauce-labs-onesie" data-test="add-to-cart-sauce-labs-onesie" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-onesie"]')
-    6) <button class="btn btn_primary btn_small btn_inventory " id="add-to-cart-test.allthethings()-t-shirt-(red)" name="add-to-cart-test.allthethings()-t-shirt-(red)" data-test="add-to-cart-test.allthethings()-t-shirt-(red)">Add to cart</button> aka locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
+=== add_to_cart_3 — Remove product from cart updates badge ===
+Result: FAIL
+Reason: Translation failed: step 0 ("navigate to products page as standard user"): navigate step's target_hint is not a URL: "textbox: Username"; step 6 ("assert cart badge is hidden"): Unrecognized action: "assert cart badge is hidden"
 
-Call log:
-  - waiting for getByRole('button', { name: 'Add to cart' })
+=== add_to_cart_4 — View cart without adding any items ===
+Result: FAIL
+Reason: Translation failed: step 0 ("navigate to products page as standard user"): navigate step's target_hint is not a URL: "textbox: Username"; step 5 ("assert cart is empty"): Unrecognized action: "assert cart is empty"
 
+=== add_to_cart_5 — Add product to cart without login ===
+Result: FAIL
+Reason: Translation failed: step 4 ("navigate to inventory page directly"): navigate step's target_hint is not a URL: "textbox: Username"
 
-=== login_invalid — Login with invalid credentials ===
+=== login_invalid_1 — Login with invalid username and invalid password ===
 Result: PASS
   [pass] navigate — selector: goto('https://www.saucedemo.com/')
   [pass] fill — selector: getByRole('textbox', { name: 'Username' })
   [pass] fill — selector: getByRole('textbox', { name: 'Password' })
   [pass] click — selector: getByRole('button', { name: 'Login' })
-  [pass] checkVisible — selector: getByRole('heading', { name: 'Epic sadface: Username and password do not match any user in this service' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Username and password do not match any user in this service')
 
-=== login_valid — Successful login with valid credentials ===
+=== login_invalid_2 — Login with valid username and invalid password ===
+Result: PASS
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Username and password do not match any user in this service')
+
+=== login_invalid_3 — Login with invalid username and valid password ===
+Result: PASS
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Username and password do not match any user in this service')
+
+=== login_invalid_4 — Login with empty username and password ===
+Result: PASS
+  [pass] navigate — selector: goto('/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Username is required')
+
+=== login_invalid_5 — Login with empty password ===
+Result: PASS
+  [pass] navigate — selector: goto('/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Password is required')
+
+=== login_invalid_6 — Successful login with valid credentials ===
+Result: FAIL
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [FAIL] checkVisible — locator.waitFor: Timeout 8000ms exceeded.
+Call log:
+  - waiting for getByText('span: Products') to be visible
+
+Reason: Step "checkVisible" failed after retry: locator.waitFor: Timeout 8000ms exceeded.
+Call log:
+  - waiting for getByText('span: Products') to be visible
+
+
+=== login_valid_1 — Successful login with valid credentials ===
 Result: PASS
   [pass] navigate — selector: goto('https://www.saucedemo.com/')
   [pass] fill — selector: getByRole('textbox', { name: 'Username' })
@@ -41,4 +87,41 @@ Result: PASS
   [pass] click — selector: getByRole('button', { name: 'Login' })
   [pass] checkVisible — selector: getByText('Products')
 
-=== Summary: 2/3 test cases PASSED ===
+=== login_valid_2 — Login fails with invalid password ===
+Result: PASS
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Username and password do not match any user in this service')
+
+=== login_valid_3 — Login fails with locked out user ===
+Result: PASS
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Sorry, this user has been locked out.')
+
+=== login_valid_4 — Login fails with empty username and password ===
+Result: PASS
+  [pass] navigate — selector: goto('/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Username is required')
+
+=== login_valid_5 — Login fails with empty password only ===
+Result: PASS
+  [pass] navigate — selector: goto('/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] fill — selector: getByRole('textbox', { name: 'Password' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] navigate — selector: goto('https://www.saucedemo.com/')
+  [pass] fill — selector: getByRole('textbox', { name: 'Username' })
+  [pass] click — selector: getByRole('button', { name: 'Login' })
+  [pass] checkVisible — selector: getByText('Epic sadface: Password is required')
+
+=== Summary: 10/16 test cases PASSED ===

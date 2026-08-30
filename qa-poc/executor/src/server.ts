@@ -45,7 +45,8 @@ app.post('/api/generate', async (req, res) => {
     stories.map(async (story, storyIndex): Promise<GenerateStoryResult> => {
       const outcome = await generateOne(story);
       if (outcome.ok) {
-        return { storyIndex, story, status: 'ok', id: randomUUID(), testCase: outcome.testCase };
+        const testCases = outcome.testCases.map((testCase) => ({ id: randomUUID(), testCase }));
+        return { storyIndex, story, status: 'ok', testCases };
       }
       return { storyIndex, story, status: 'error', error: outcome.error, errorType: outcome.errorType };
     }),

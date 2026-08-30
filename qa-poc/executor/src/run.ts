@@ -20,10 +20,15 @@ function loadTestFiles(): TestFile[] {
   return readdirSync(OUTPUT_DIR)
     .filter((f) => f.endsWith('.json'))
     .sort()
-    .map((f) => ({
-      fileStem: path.basename(f, '.json'),
-      testCase: JSON.parse(readFileSync(path.join(OUTPUT_DIR, f), 'utf-8')) as TestCase,
-    }));
+    .flatMap((f) => {
+      const stem = path.basename(f, '.json');
+      const parsed = JSON.parse(readFileSync(path.join(OUTPUT_DIR, f), 'utf-8')) as TestCase | TestCase[];
+      const testCases = Array.isArray(parsed) ? parsed : [parsed];
+      return testCases.map((testCase, i) => ({
+        fileStem: testCases.length > 1 ? `${stem}_${i + 1}` : stem,
+        testCase,
+      }));
+    });
 }
 
 function formatReport(reports: TestReport[]): string {

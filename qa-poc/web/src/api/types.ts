@@ -17,6 +17,10 @@ export interface TestCase {
 export interface IdentifiedTestCase {
   id: string;
   testCase: TestCase;
+  /** Which submitted story (by index) generated this test case; undefined for manually added ones. Display-only. */
+  storyIndex?: number;
+  /** Short preview of that story's text, for grouping headers in the Review UI. Display-only. */
+  storyPreview?: string;
 }
 
 export interface TranslationError {
@@ -34,7 +38,7 @@ export type GenerationErrorType =
   | 'unknown';
 
 export type GenerateStoryResult =
-  | { storyIndex: number; story: string; status: 'ok'; id: string; testCase: TestCase }
+  | { storyIndex: number; story: string; status: 'ok'; testCases: IdentifiedTestCase[] }
   | { storyIndex: number; story: string; status: 'error'; error: string; errorType: GenerationErrorType };
 
 export interface GenerateResponse {

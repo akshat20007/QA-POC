@@ -11,12 +11,12 @@ const PYTHON_BIN = process.env.PYTHON_BIN ?? 'python';
 const TIMEOUT_MS = 30_000;
 
 export type GenerationOutcome =
-  | { ok: true; testCase: TestCase }
+  | { ok: true; testCases: TestCase[] }
   | { ok: false; error: string; errorType: GenerationErrorType };
 
 interface SingleModeStdout {
   ok: boolean;
-  testCase?: TestCase;
+  testCases?: TestCase[];
   error?: string;
   errorType?: GenerationErrorType;
 }
@@ -59,8 +59,8 @@ export function generateOne(storyText: string): Promise<GenerationOutcome> {
       const line = stdout.trim().split('\n').pop() ?? '';
       try {
         const parsed = JSON.parse(line) as SingleModeStdout;
-        if (parsed.ok && parsed.testCase) {
-          resolve({ ok: true, testCase: parsed.testCase });
+        if (parsed.ok && parsed.testCases) {
+          resolve({ ok: true, testCases: parsed.testCases });
         } else {
           resolve({
             ok: false,

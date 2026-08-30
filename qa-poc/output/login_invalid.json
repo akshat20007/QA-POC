@@ -1,34 +1,232 @@
-{
-  "name": "Login with invalid credentials",
-  "priority": "high",
-  "category": "negative",
-  "steps": [
-    {
-      "type": "given",
-      "action": "navigate to login page",
-      "target_hint": "https://www.saucedemo.com/"
-    },
-    {
-      "type": "when",
-      "action": "fill username",
-      "target_hint": "textbox: Username",
-      "value": "wrong_user"
-    },
-    {
-      "type": "when",
-      "action": "fill password",
-      "target_hint": "textbox: Password",
-      "value": "wrong_pass"
-    },
-    {
-      "type": "when",
-      "action": "click login button",
-      "target_hint": "button: Login"
-    },
-    {
-      "type": "then",
-      "action": "assert error message visible",
-      "target_hint": "heading: Epic sadface: Username and password do not match any user in this service"
-    }
-  ]
-}
+[
+  {
+    "name": "Login with invalid username and invalid password",
+    "priority": "high",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "wrong_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "wrong_pass"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "Epic sadface: Username and password do not match any user in this service"
+      }
+    ]
+  },
+  {
+    "name": "Login with valid username and invalid password",
+    "priority": "high",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "wrong_pass"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "Epic sadface: Username and password do not match any user in this service"
+      }
+    ]
+  },
+  {
+    "name": "Login with invalid username and valid password",
+    "priority": "high",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "wrong_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "Epic sadface: Username and password do not match any user in this service"
+      }
+    ]
+  },
+  {
+    "name": "Login with empty username and password",
+    "priority": "medium",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "given",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "given",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "given",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "Epic sadface: Username is required"
+      }
+    ]
+  },
+  {
+    "name": "Login with empty password",
+    "priority": "medium",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "given",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "given",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "given",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert error message visible",
+        "target_hint": "Epic sadface: Password is required"
+      }
+    ]
+  },
+  {
+    "name": "Successful login with valid credentials",
+    "priority": "high",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert products page visible",
+        "target_hint": "span: Products"
+      }
+    ]
+  }
+]

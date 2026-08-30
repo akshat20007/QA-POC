@@ -1,54 +1,217 @@
-{
-  "name": "Add product to cart and verify cart contents",
-  "priority": "high",
-  "category": "happy-path",
-  "steps": [
-    {
-      "type": "given",
-      "action": "navigate to login page",
-      "target_hint": "url: /"
-    },
-    {
-      "type": "given",
-      "action": "fill username",
-      "target_hint": "textbox: Username",
-      "value": "standard_user"
-    },
-    {
-      "type": "given",
-      "action": "fill password",
-      "target_hint": "textbox: Password",
-      "value": "secret_sauce"
-    },
-    {
-      "type": "given",
-      "action": "click login button",
-      "target_hint": "button: Login"
-    },
-    {
-      "type": "given",
-      "action": "navigate to products page",
-      "target_hint": "url: /inventory.html"
-    },
-    {
-      "type": "when",
-      "action": "click add to cart button",
-      "target_hint": "button: Add to cart"
-    },
-    {
-      "type": "then",
-      "action": "assert cart badge shows one item",
-      "target_hint": "span: 1"
-    },
-    {
-      "type": "when",
-      "action": "click cart icon",
-      "target_hint": "link: 1"
-    },
-    {
-      "type": "then",
-      "action": "assert product is visible in cart",
-      "target_hint": "link: Sauce Labs Backpack"
-    }
-  ]
-}
+[
+  {
+    "name": "Add product to cart successfully",
+    "priority": "high",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "textbox: Username"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "when",
+        "action": "click add to cart for backpack",
+        "target_hint": "button: Add to cart"
+      },
+      {
+        "type": "then",
+        "action": "assert cart badge shows one item",
+        "target_hint": "link: 1"
+      },
+      {
+        "type": "when",
+        "action": "click cart icon",
+        "target_hint": "link: 1"
+      },
+      {
+        "type": "then",
+        "action": "assert backpack is listed in cart",
+        "target_hint": "link: Sauce Labs Backpack"
+      }
+    ]
+  },
+  {
+    "name": "Add multiple products to cart",
+    "priority": "medium",
+    "category": "edge-case",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to products page as standard user",
+        "target_hint": "textbox: Username"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "when",
+        "action": "click add to cart for backpack",
+        "target_hint": "button: Add to cart"
+      },
+      {
+        "type": "when",
+        "action": "click add to cart for bike light",
+        "target_hint": "button: Add to cart"
+      },
+      {
+        "type": "then",
+        "action": "assert cart badge shows two items",
+        "target_hint": "link: 2"
+      }
+    ]
+  },
+  {
+    "name": "Remove product from cart updates badge",
+    "priority": "medium",
+    "category": "edge-case",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to products page as standard user",
+        "target_hint": "textbox: Username"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "when",
+        "action": "click add to cart for backpack",
+        "target_hint": "button: Add to cart"
+      },
+      {
+        "type": "when",
+        "action": "click remove button for backpack",
+        "target_hint": "button: Remove"
+      },
+      {
+        "type": "then",
+        "action": "assert cart badge is hidden",
+        "target_hint": "link: Shopping Cart Link"
+      }
+    ]
+  },
+  {
+    "name": "View cart without adding any items",
+    "priority": "low",
+    "category": "edge-case",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to products page as standard user",
+        "target_hint": "textbox: Username"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "when",
+        "action": "click cart icon",
+        "target_hint": "link: Shopping Cart Link"
+      },
+      {
+        "type": "then",
+        "action": "assert cart is empty",
+        "target_hint": "text: Your Cart"
+      }
+    ]
+  },
+  {
+    "name": "Add product to cart without login",
+    "priority": "high",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "given",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "given",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "given",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "given",
+        "action": "navigate to inventory page directly",
+        "target_hint": "textbox: Username"
+      },
+      {
+        "type": "then",
+        "action": "assert error message for unauthorized access is visible",
+        "target_hint": "text: Epic sadface"
+      }
+    ]
+  }
+]
