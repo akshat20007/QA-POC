@@ -24,6 +24,7 @@ export type TranslatedStep =
   | { kind: 'fill'; locator: LocatorSpec; value: string }
   | { kind: 'select'; locator: LocatorSpec; value: string }
   | { kind: 'checkVisible'; locator: LocatorSpec }
+  | { kind: 'checkHidden'; locator: LocatorSpec }
   | { kind: 'checkText'; locator: LocatorSpec; text: string };
 
 export interface TranslationError {

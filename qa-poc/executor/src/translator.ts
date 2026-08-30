@@ -57,7 +57,7 @@ export function parseTargetHint(hint: string): LocatorSpec {
   return { strategy: 'text', text: trimmed };
 }
 
-type ActionKind = 'navigate' | 'click' | 'fill' | 'select' | 'checkVisible' | 'checkText';
+type ActionKind = 'navigate' | 'click' | 'fill' | 'select' | 'checkVisible' | 'checkHidden' | 'checkText';
 
 /** True if `word` appears in `text` as a whole word, not as a substring of a longer word
  * (e.g. "select" must not match inside "selected"). */
@@ -72,8 +72,32 @@ export function classifyAction(action: string): ActionKind | null {
   if (hasWord(a, 'click')) return 'click';
   if (hasWord(a, 'fill') || hasWord(a, 'enter')) return 'fill';
   if (hasWord(a, 'select') || hasWord(a, 'choose')) return 'select';
+  if (
+    hasWord(a, 'absent') ||
+    hasWord(a, 'hidden') ||
+    hasWord(a, 'disappears') ||
+    hasWord(a, 'disappeared') ||
+    hasWord(a, 'empty') ||
+    /\bnot\s+(be\s+)?visible\b/.test(a)
+  ) {
+    return 'checkHidden';
+  }
   if (hasWord(a, 'visible')) return 'checkVisible';
-  if (hasWord(a, 'verify') || hasWord(a, 'listed') || hasWord(a, 'shows')) return 'checkText';
+  // "assert" is the LLM's generic, catch-all way of phrasing a `then` step (e.g. "assert
+  // product is in cart"); treat it as a synonym of the other assertion words below rather
+  // than trying to enumerate every specific phrase that can follow it. It's checked after
+  // the negation and visibility tiers above so absence/visibility assertions still route
+  // there even when phrased as "assert X is absent" / "assert X is visible".
+  if (
+    hasWord(a, 'assert') ||
+    hasWord(a, 'verify') ||
+    hasWord(a, 'listed') ||
+    hasWord(a, 'shows') ||
+    hasWord(a, 'changes') ||
+    hasWord(a, 'changed')
+  ) {
+    return 'checkText';
+  }
   return null;
 }
 
@@ -115,6 +139,10 @@ export function translateStep(step: TestStep): TranslatedStep {
 
   if (kind === 'checkVisible') {
     return { kind: 'checkVisible', locator };
+  }
+
+  if (kind === 'checkHidden') {
+    return { kind: 'checkHidden', locator };
   }
 
   // checkText

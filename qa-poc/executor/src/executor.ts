@@ -47,6 +47,9 @@ export async function applyStep(page: Page, step: TranslatedStep): Promise<StepR
     case 'checkText':
       await locator.waitFor({ state: 'visible' });
       break;
+    case 'checkHidden':
+      await locator.waitFor({ state: 'hidden' });
+      break;
   }
 
   return { selectorUsed };
