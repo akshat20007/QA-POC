@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import type { TestCase, TestStep, TranslationError } from '../api/types';
 import { Card, CardHeader, CardBody, CardFooter } from './Card';
-import { PriorityBadge, CategoryBadge } from './Badge';
+import { PriorityBadge, CategoryBadge, WarningBadge } from './Badge';
 import { Button } from './Button';
 import { StepEditor } from './StepEditor';
+import { ChevronIcon } from './icons';
 
 interface Props {
   testCase: TestCase;
@@ -14,6 +16,9 @@ interface Props {
 const NEW_STEP: TestStep = { type: 'when', action: '', target_hint: '' };
 
 export function TestCaseCard({ testCase, errors, onChange, onDelete }: Props) {
+  const [expanded, setExpanded] = useState(false);
+  const isOpen = expanded || errors.length > 0;
+
   function updateStep(index: number, step: TestStep) {
     const steps = [...testCase.steps];
     steps[index] = step;
@@ -33,6 +38,15 @@ export function TestCaseCard({ testCase, errors, onChange, onDelete }: Props) {
   return (
     <Card>
       <CardHeader className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          aria-label={isOpen ? 'Collapse test case' : 'Expand test case'}
+          onClick={() => setExpanded((e) => !e)}
+          className="flex-shrink-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        >
+          <ChevronIcon className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+        </button>
         <input
           className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:max-w-xs"
           value={testCase.name}
@@ -60,24 +74,27 @@ export function TestCaseCard({ testCase, errors, onChange, onDelete }: Props) {
           </select>
           <PriorityBadge priority={testCase.priority} />
           <CategoryBadge category={testCase.category} />
+          {errors.length > 0 && <WarningBadge>{errors.length} error(s)</WarningBadge>}
         </div>
       </CardHeader>
 
-      <CardBody className="space-y-2">
-        {testCase.steps.map((step, index) => (
-          <StepEditor
-            key={index}
-            step={step}
-            error={errorByIndex.get(index)}
-            onChange={(s) => updateStep(index, s)}
-            onDelete={() => deleteStep(index)}
-            canDelete={testCase.steps.length > 1}
-          />
-        ))}
-        <Button variant="secondary" type="button" onClick={addStep}>
-          + Add Step
-        </Button>
-      </CardBody>
+      {isOpen && (
+        <CardBody className="space-y-2">
+          {testCase.steps.map((step, index) => (
+            <StepEditor
+              key={index}
+              step={step}
+              error={errorByIndex.get(index)}
+              onChange={(s) => updateStep(index, s)}
+              onDelete={() => deleteStep(index)}
+              canDelete={testCase.steps.length > 1}
+            />
+          ))}
+          <Button variant="secondary" type="button" onClick={addStep}>
+            + Add Step
+          </Button>
+        </CardBody>
+      )}
 
       <CardFooter>
         <span className="text-xs text-slate-400">{testCase.steps.length} step(s)</span>
