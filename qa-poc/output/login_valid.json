@@ -28,13 +28,52 @@
       },
       {
         "type": "then",
-        "action": "assert products page visible",
-        "target_hint": "text: Products"
+        "action": "assert redirected to inventory page",
+        "target_hint": "url: /inventory.html"
+      },
+      {
+        "type": "then",
+        "action": "assert products heading visible",
+        "target_hint": "Products"
       }
     ]
   },
   {
-    "name": "Login fails with invalid password",
+    "name": "Failed login with locked out user",
+    "priority": "high",
+    "category": "negative",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "https://www.saucedemo.com/"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "locked_out_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert locked out error message visible",
+        "target_hint": "Epic sadface: Sorry, this user has been locked out."
+      }
+    ]
+  },
+  {
+    "name": "Failed login with incorrect password",
     "priority": "high",
     "category": "negative",
     "steps": [
@@ -62,47 +101,13 @@
       },
       {
         "type": "then",
-        "action": "assert error message visible",
-        "target_hint": "text: Epic sadface: Username and password do not match any user in this service"
+        "action": "assert credentials mismatch error message visible",
+        "target_hint": "Epic sadface: Username and password do not match any user in this service"
       }
     ]
   },
   {
-    "name": "Login fails with locked out user",
-    "priority": "medium",
-    "category": "negative",
-    "steps": [
-      {
-        "type": "given",
-        "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
-      },
-      {
-        "type": "when",
-        "action": "fill username",
-        "target_hint": "textbox: Username",
-        "value": "locked_out_user"
-      },
-      {
-        "type": "when",
-        "action": "fill password",
-        "target_hint": "textbox: Password",
-        "value": "secret_sauce"
-      },
-      {
-        "type": "when",
-        "action": "click login button",
-        "target_hint": "button: Login"
-      },
-      {
-        "type": "then",
-        "action": "assert error message visible",
-        "target_hint": "text: Epic sadface: Sorry, this user has been locked out."
-      }
-    ]
-  },
-  {
-    "name": "Login fails with empty username and password",
+    "name": "Failed login with empty username and password",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -140,13 +145,13 @@
       },
       {
         "type": "then",
-        "action": "assert error message visible",
-        "target_hint": "text: Epic sadface: Username is required"
+        "action": "assert username required error message visible",
+        "target_hint": "Epic sadface: Username is required"
       }
     ]
   },
   {
-    "name": "Login fails with empty password only",
+    "name": "Failed login with empty password",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -190,8 +195,8 @@
       },
       {
         "type": "then",
-        "action": "assert error message visible",
-        "target_hint": "text: Epic sadface: Password is required"
+        "action": "assert password required error message visible",
+        "target_hint": "Epic sadface: Password is required"
       }
     ]
   }

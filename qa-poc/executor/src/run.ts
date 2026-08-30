@@ -38,7 +38,8 @@ function formatReport(reports: TestReport[]): string {
     lines.push(`Result: ${r.outcome}`);
     for (const s of r.steps) {
       const marker = s.outcome === 'pass' ? '  [pass]' : '  [FAIL]';
-      lines.push(`${marker} ${s.action}${s.selectorUsed ? ` — selector: ${s.selectorUsed}` : ''}${s.error ? ` — ${s.error}` : ''}`);
+      const screenshotNote = s.screenshotPath ? ` — screenshot: ${s.screenshotPath}` : '';
+      lines.push(`${marker} ${s.action}${s.selectorUsed ? ` — selector: ${s.selectorUsed}` : ''}${s.error ? ` — ${s.error}` : ''}${screenshotNote}`);
     }
     if (r.reason) lines.push(`Reason: ${r.reason}`);
   }

@@ -9,6 +9,7 @@ export interface DisplayStep {
   outcome: 'pass' | 'fail';
   selectorUsed?: string;
   error?: string;
+  screenshot?: string;
 }
 
 /** Read-only step list for the Execution and Report stages (see design.md's step-list row pattern). */
@@ -36,6 +37,16 @@ export function StepList({ steps, status }: { steps: DisplayStep[]; status?: Tes
               <pre className="mt-2 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-slate-100">
                 {step.error}
               </pre>
+            </details>
+          )}
+          {step.screenshot && (
+            <details className="mt-2">
+              <summary className="cursor-pointer select-none text-xs text-indigo-600">Show screenshot at failure</summary>
+              <img
+                src={`data:image/png;base64,${step.screenshot}`}
+                alt={`Page state when "${step.label}" failed`}
+                className="mt-2 w-full rounded-lg border border-slate-200"
+              />
             </details>
           )}
         </li>

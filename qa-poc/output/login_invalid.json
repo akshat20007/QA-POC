@@ -1,6 +1,6 @@
 [
   {
-    "name": "Login with invalid username and invalid password",
+    "name": "Invalid username and password login attempt",
     "priority": "high",
     "category": "negative",
     "steps": [
@@ -34,7 +34,7 @@
     ]
   },
   {
-    "name": "Login with valid username and invalid password",
+    "name": "Locked out user login attempt",
     "priority": "high",
     "category": "negative",
     "steps": [
@@ -47,41 +47,7 @@
         "type": "when",
         "action": "fill username",
         "target_hint": "textbox: Username",
-        "value": "standard_user"
-      },
-      {
-        "type": "when",
-        "action": "fill password",
-        "target_hint": "textbox: Password",
-        "value": "wrong_pass"
-      },
-      {
-        "type": "when",
-        "action": "click login button",
-        "target_hint": "button: Login"
-      },
-      {
-        "type": "then",
-        "action": "assert error message visible",
-        "target_hint": "Epic sadface: Username and password do not match any user in this service"
-      }
-    ]
-  },
-  {
-    "name": "Login with invalid username and valid password",
-    "priority": "high",
-    "category": "negative",
-    "steps": [
-      {
-        "type": "given",
-        "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
-      },
-      {
-        "type": "when",
-        "action": "fill username",
-        "target_hint": "textbox: Username",
-        "value": "wrong_user"
+        "value": "locked_out_user"
       },
       {
         "type": "when",
@@ -97,12 +63,12 @@
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Username and password do not match any user in this service"
+        "target_hint": "Epic sadface: Sorry, this user has been locked out."
       }
     ]
   },
   {
-    "name": "Login with empty username and password",
+    "name": "Empty username login attempt",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -135,6 +101,12 @@
       },
       {
         "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
         "action": "click login button",
         "target_hint": "button: Login"
       },
@@ -146,7 +118,7 @@
     ]
   },
   {
-    "name": "Login with empty password",
+    "name": "Empty password login attempt",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -196,7 +168,7 @@
     ]
   },
   {
-    "name": "Successful login with valid credentials",
+    "name": "Successful login with standard user",
     "priority": "high",
     "category": "happy-path",
     "steps": [
@@ -224,8 +196,8 @@
       },
       {
         "type": "then",
-        "action": "assert products page visible",
-        "target_hint": "span: Products"
+        "action": "assert inventory page is displayed",
+        "target_hint": "url: /inventory.html"
       }
     ]
   }

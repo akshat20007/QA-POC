@@ -20,8 +20,10 @@ MODEL = "gemini-flash-lite-latest"
 STORIES_DIR = Path(__file__).parent / "stories"
 OUTPUT_DIR = Path(__file__).parent / "output"
 RESULTS_LOG = OUTPUT_DIR / "results.log"
+CONTEXT_DIR = Path(__file__).parent / "context"
+SITE_CONTEXT_FILE = CONTEXT_DIR / "saucedemo.md"
 
-SYSTEM_PROMPT = """You are a senior QA engineer writing precise, executable test cases from user stories.
+SYSTEM_PROMPT_BASE = """You are a senior QA engineer writing precise, executable test cases from user stories.
 
 Given a user story, produce between 5 and 10 test cases as a JSON array (no markdown fences, no prose,
 no explanation), each item matching this schema:
@@ -63,6 +65,10 @@ Rules (apply to every item in the array):
   assertions).
 - For a select-type action, "target_hint" must identify the dropdown/combobox itself (e.g. "combobox: Sort
   by"), not the option being chosen - the option text goes in "value".
+- For a navigate-type action (going directly to a page by URL, e.g. "navigate to login page"),
+  "target_hint" must be a URL: either a full "https://..." URL or a "url: /path" form. Never use a
+  role/text hint (like "textbox: Username") for a navigate step - that belongs on the step that
+  actually interacts with that element.
 """
 
 TEST_CASE_SCHEMA = {
@@ -103,12 +109,35 @@ def log(message: str) -> None:
         f.write(message + "\n")
 
 
-def generate_test_cases(client: genai.Client, story_text: str) -> list[dict]:
+def load_site_context() -> str:
+    """Reads the site-exploration doc (qa-poc/context/saucedemo.md) so target_hints line up
+    with real accessible roles/names. Missing file is not fatal - warns and returns ""."""
+    if not SITE_CONTEXT_FILE.exists():
+        print(f"WARNING: site context file not found at {SITE_CONTEXT_FILE}; "
+              f"generating without it.", file=sys.stderr)
+        return ""
+    return SITE_CONTEXT_FILE.read_text(encoding="utf-8")
+
+
+def build_system_prompt(site_context: str) -> str:
+    """Appends site context (if any) to the base prompt as a labeled reference section."""
+    if not site_context:
+        return SYSTEM_PROMPT_BASE
+    return (
+        f"{SYSTEM_PROMPT_BASE}\n\n"
+        f"Reference: known site structure (use this to pick accurate target_hints - "
+        f"it lists the real accessible roles/names/caveats for this site; if an element "
+        f"has no accessible role/name per this reference, fall back to a text hint instead "
+        f"of inventing a role):\n{site_context}"
+    )
+
+
+def generate_test_cases(client: genai.Client, story_text: str, system_prompt: str) -> list[dict]:
     response = client.models.generate_content(
         model=MODEL,
         contents=story_text,
         config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
+            system_instruction=system_prompt,
             response_mime_type="application/json",
             response_schema=JSON_SCHEMA,
         ),
@@ -155,6 +184,28 @@ def ensure_login_precondition(test_case: dict) -> dict:
     return test_case
 
 
+def fix_navigate_target_hints(test_case: dict) -> dict:
+    """Guards against an occasionally-observed model glitch: a navigate step's target_hint
+    echoing the *next* step's role/text hint (e.g. "textbox: Username") instead of being a
+    URL, which the translator then rejects outright. The prompt now says navigate target_hints
+    must be URLs, but that's not a guarantee - so this deterministically corrects the one
+    navigate destination this PoC can be certain about: the login page, the only page
+    reachable without an existing session. Any other navigate step with a non-URL target_hint
+    is left alone rather than guessed at, so it still surfaces as a translation error instead
+    of silently pointing somewhere wrong."""
+    for step in test_case.get("steps", []):
+        action = str(step.get("action", "")).lower()
+        words = action.split()
+        is_navigate = "navigate" in words or "go" in words
+        if not is_navigate or "login" not in action:
+            continue
+        hint = str(step.get("target_hint", ""))
+        looks_like_url = hint.startswith("url:") or hint.startswith("http://") or hint.startswith("https://")
+        if not looks_like_url:
+            step["target_hint"] = "url: /"
+    return test_case
+
+
 def main() -> None:
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -163,6 +214,8 @@ def main() -> None:
         sys.exit(1)
 
     client = genai.Client(api_key=api_key)
+    site_context = load_site_context()
+    system_prompt = build_system_prompt(site_context)
 
     OUTPUT_DIR.mkdir(exist_ok=True)
     RESULTS_LOG.write_text("", encoding="utf-8")  # fresh log each run
@@ -178,8 +231,9 @@ def main() -> None:
         story_text = story_file.read_text(encoding="utf-8")
         log(f"\n=== {story_file.name} ===")
         try:
-            test_cases = generate_test_cases(client, story_text)
+            test_cases = generate_test_cases(client, story_text, system_prompt)
             test_cases = [ensure_login_precondition(tc) for tc in test_cases]
+            test_cases = [fix_navigate_target_hints(tc) for tc in test_cases]
             log(f"Generated {len(test_cases)} test cases")
             log(json.dumps(test_cases, indent=2))
             json_path = OUTPUT_DIR / f"{story_file.stem}.json"
@@ -213,8 +267,11 @@ def main_single() -> None:
 
     try:
         client = genai.Client(api_key=api_key)
-        test_cases = generate_test_cases(client, story_text)
+        site_context = load_site_context()
+        system_prompt = build_system_prompt(site_context)
+        test_cases = generate_test_cases(client, story_text, system_prompt)
         test_cases = [ensure_login_precondition(tc) for tc in test_cases]
+        test_cases = [fix_navigate_target_hints(tc) for tc in test_cases]
         print(json.dumps({"ok": True, "testCases": test_cases}))
     except genai_errors.APIError as exc:
         print(json.dumps({"ok": False, "error": str(exc), "errorType": "api_error"}))

@@ -62,6 +62,10 @@ export interface StepResultPayload {
   outcome: 'pass' | 'fail';
   selectorUsed?: string;
   error?: string;
+  /** Base64-encoded PNG of the page at the moment this step failed. Only set when outcome is 'fail'. */
+  screenshot?: string;
+  /** Path (relative to qa-poc/) of the same screenshot as saved to disk. Only set when outcome is 'fail'. */
+  screenshotPath?: string;
 }
 
 export interface TestStartPayload {
@@ -111,6 +115,10 @@ export interface StepReport {
   selectorUsed?: string;
   outcome: 'pass' | 'fail';
   error?: string;
+  /** Base64-encoded PNG of the page at the moment this step failed. Only set when outcome is 'fail'. */
+  screenshot?: string;
+  /** Path (relative to qa-poc/) of the same screenshot as saved to disk. Only set when outcome is 'fail'. */
+  screenshotPath?: string;
 }
 
 export interface TestReport {

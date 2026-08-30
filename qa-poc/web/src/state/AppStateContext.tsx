@@ -15,7 +15,7 @@ export interface LiveTestProgress {
   id: string;
   name: string;
   status: TestStatus;
-  steps: Array<{ stepIndex: number; action: string; label: string; outcome: 'pass' | 'fail'; selectorUsed?: string; error?: string }>;
+  steps: Array<{ stepIndex: number; action: string; label: string; outcome: 'pass' | 'fail'; selectorUsed?: string; error?: string; screenshot?: string; screenshotPath?: string }>;
   reason?: string;
 }
 

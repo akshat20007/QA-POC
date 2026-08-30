@@ -1,10 +1,27 @@
 import { EventEmitter } from 'node:events';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Browser, BrowserContext } from 'playwright';
 import { chromium } from 'playwright';
 import { translateTestCase } from './translator.js';
 import { applyStep, withRetry, BASE_URL, ACTION_TIMEOUT_MS } from './executor.js';
 import type { TestCase } from './types.js';
 import type { RunEvent, TestReport } from './apiTypes.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// qa-poc/output/ - same directory generate.py and run.ts already use (src -> executor -> qa-poc -> output).
+const SCREENSHOTS_DIR = path.join(__dirname, '..', '..', 'output', 'screenshots');
+
+/** Persists a failed step's screenshot to disk (used by both the CLI and the web-server run
+ * paths, since both go through runTestCases). runId is included in the filename so re-running
+ * the same test case (same id, new run) doesn't overwrite an earlier run's screenshot. */
+function saveScreenshotFile(runId: string, testId: string, stepIndex: number, buffer: Buffer): string {
+  mkdirSync(SCREENSHOTS_DIR, { recursive: true });
+  const fileName = `${runId}-${testId}-step${stepIndex}.png`;
+  writeFileSync(path.join(SCREENSHOTS_DIR, fileName), buffer);
+  return path.join('output', 'screenshots', fileName);
+}
 
 export interface RunnableTestCase {
   id: string;
@@ -28,6 +45,7 @@ function stripAnsi(text: string): string {
 }
 
 async function runOne(
+  runId: string,
   browser: Browser,
   item: RunnableTestCase,
   index: number,
@@ -69,10 +87,15 @@ async function runOne(
         });
       } catch (exc) {
         const message = stripAnsi(exc instanceof Error ? exc.message : String(exc));
-        steps.push({ action: step.kind, label, outcome: 'fail', error: message });
+        // Screenshot the live page at the moment of failure, before context teardown. Best-effort:
+        // a failure here (e.g. the page itself crashed) shouldn't mask the original step error.
+        const screenshotBuffer = await page.screenshot().catch(() => undefined);
+        const screenshot = screenshotBuffer?.toString('base64');
+        const screenshotPath = screenshotBuffer ? saveScreenshotFile(runId, id, stepIndex, screenshotBuffer) : undefined;
+        steps.push({ action: step.kind, label, outcome: 'fail', error: message, screenshot, screenshotPath });
         emit(emitter, {
           type: 'step-result',
-          payload: { testId: id, stepIndex, action: step.kind, label, outcome: 'fail', error: message },
+          payload: { testId: id, stepIndex, action: step.kind, label, outcome: 'fail', error: message, screenshot, screenshotPath },
         });
         failReason = `Step "${step.kind}" failed after retry: ${message}`;
         break;
@@ -110,7 +133,7 @@ export async function runTestCases(
   try {
     browser = await chromium.launch({ headless });
     for (let index = 0; index < testCases.length; index++) {
-      reports.push(await runOne(browser, testCases[index], index, totalTests, emitter));
+      reports.push(await runOne(runId, browser, testCases[index], index, totalTests, emitter));
     }
     const summary = {
       total: reports.length,
