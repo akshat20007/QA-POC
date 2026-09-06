@@ -1,23 +1,28 @@
 import { useState } from 'react';
-import type { TestCase, TestStep, TranslationError } from '../api/types';
+import type { StoryType, TestCase, TestStep, TranslationError } from '../api/types';
 import { Card, CardHeader, CardBody, CardFooter } from './Card';
 import { PriorityBadge, CategoryBadge, WarningBadge } from './Badge';
 import { Button } from './Button';
 import { StepEditor } from './StepEditor';
+import { ApiRequestEditor } from './ApiRequestEditor';
 import { ChevronIcon } from './icons';
+import { accentFor } from '../theme/storyAccent';
 
 interface Props {
   testCase: TestCase;
+  storyType: StoryType;
   errors: TranslationError[];
   onChange: (testCase: TestCase) => void;
   onDelete: () => void;
 }
 
-const NEW_STEP: TestStep = { type: 'when', action: '', target_hint: '' };
+const NEW_UI_STEP: TestStep = { type: 'when', action: '', target_hint: '' };
+const NEW_API_STEP: TestStep = { type: 'when', action: 'send GET request', target_hint: 'GET /api/users' };
 
-export function TestCaseCard({ testCase, errors, onChange, onDelete }: Props) {
+export function TestCaseCard({ testCase, storyType, errors, onChange, onDelete }: Props) {
   const [expanded, setExpanded] = useState(false);
   const isOpen = expanded || errors.length > 0;
+  const accent = accentFor(storyType);
 
   function updateStep(index: number, step: TestStep) {
     const steps = [...testCase.steps];
@@ -30,13 +35,14 @@ export function TestCaseCard({ testCase, errors, onChange, onDelete }: Props) {
   }
 
   function addStep() {
-    onChange({ ...testCase, steps: [...testCase.steps, { ...NEW_STEP }] });
+    const newStep = storyType === 'api' ? { ...NEW_API_STEP } : { ...NEW_UI_STEP };
+    onChange({ ...testCase, steps: [...testCase.steps, newStep] });
   }
 
   const errorByIndex = new Map(errors.map((e) => [e.index, e]));
 
   return (
-    <Card>
+    <Card className={accent.stripe}>
       <CardHeader className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <button
           type="button"
@@ -48,7 +54,7 @@ export function TestCaseCard({ testCase, errors, onChange, onDelete }: Props) {
           <ChevronIcon className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
         </button>
         <input
-          className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:max-w-xs"
+          className={`w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 sm:max-w-xs ${accent.focusRing}`}
           value={testCase.name}
           onChange={(e) => onChange({ ...testCase, name: e.target.value })}
           placeholder="Test case name"
@@ -80,16 +86,28 @@ export function TestCaseCard({ testCase, errors, onChange, onDelete }: Props) {
 
       {isOpen && (
         <CardBody className="space-y-2">
-          {testCase.steps.map((step, index) => (
-            <StepEditor
-              key={index}
-              step={step}
-              error={errorByIndex.get(index)}
-              onChange={(s) => updateStep(index, s)}
-              onDelete={() => deleteStep(index)}
-              canDelete={testCase.steps.length > 1}
-            />
-          ))}
+          {testCase.steps.map((step, index) =>
+            storyType === 'api' ? (
+              <ApiRequestEditor
+                key={index}
+                step={step}
+                storyType={storyType}
+                error={errorByIndex.get(index)}
+                onChange={(s) => updateStep(index, s)}
+                onDelete={() => deleteStep(index)}
+                canDelete={testCase.steps.length > 1}
+              />
+            ) : (
+              <StepEditor
+                key={index}
+                step={step}
+                error={errorByIndex.get(index)}
+                onChange={(s) => updateStep(index, s)}
+                onDelete={() => deleteStep(index)}
+                canDelete={testCase.steps.length > 1}
+              />
+            ),
+          )}
           <Button variant="secondary" type="button" onClick={addStep}>
             + Add Step
           </Button>

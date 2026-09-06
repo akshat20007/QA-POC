@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { CheckIcon, XIcon, PendingDotIcon, RunningDotIcon } from './icons';
 import type { TestStatus } from '../state/AppStateContext';
+import type { StoryType } from '../api/types';
+import { accentFor } from '../theme/storyAccent';
 
 function Badge({ children, className }: { children: ReactNode; className: string }) {
   return (
@@ -74,4 +76,9 @@ export function StepOutcomeBadge({ outcome }: { outcome: 'pass' | 'fail' }) {
 
 export function WarningBadge({ children }: { children: ReactNode }) {
   return <Badge className="bg-amber-50 text-amber-600">{children}</Badge>;
+}
+
+export function StoryTypeBadge({ storyType }: { storyType: StoryType }) {
+  const accent = accentFor(storyType);
+  return <Badge className={accent.badge}>{storyType === 'api' ? 'API' : 'UI'}</Badge>;
 }

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import express from 'express';
 import { translateTestCase } from './translator.js';
+import { validateApiTestCase } from './apiValidator.js';
 import { runTestCases } from './runner.js';
 import type { RunnableTestCase } from './runner.js';
 import { createRun, getRun, appendEvent, completeRun, registerEmitter, getEmitter, unregisterEmitter } from './store.js';
@@ -45,8 +46,12 @@ app.post('/api/generate', async (req, res) => {
     stories.map(async (story, storyIndex): Promise<GenerateStoryResult> => {
       const outcome = await generateOne(story);
       if (outcome.ok) {
-        const testCases = outcome.testCases.map((testCase) => ({ id: randomUUID(), testCase }));
-        return { storyIndex, story, status: 'ok', testCases };
+        const testCases = outcome.testCases.map((testCase) => ({
+          id: randomUUID(),
+          testCase,
+          storyType: outcome.storyType,
+        }));
+        return { storyIndex, story, status: 'ok', storyType: outcome.storyType, testCases };
       }
       return { storyIndex, story, status: 'error', error: outcome.error, errorType: outcome.errorType };
     }),
@@ -64,7 +69,10 @@ app.post('/api/validate', (req, res) => {
   }
 
   const response: ValidateResponse = {
-    results: testCases.map(({ id, testCase }) => ({ id, errors: translateTestCase(testCase).errors })),
+    results: testCases.map(({ id, testCase, storyType }) => ({
+      id,
+      errors: storyType === 'api' ? validateApiTestCase(testCase).errors : translateTestCase(testCase).errors,
+    })),
   };
   res.json(response);
 });
@@ -79,7 +87,11 @@ app.post('/api/runs', (req, res) => {
   const runId = randomUUID();
   createRun(runId);
 
-  const runnable: RunnableTestCase[] = testCases.map(({ id, testCase }) => ({ id, testCase }));
+  const runnable: RunnableTestCase[] = testCases.map(({ id, testCase, storyType }) => ({
+    id,
+    testCase,
+    storyType,
+  }));
   void startRun(runId, runnable);
 
   const response: CreateRunResponse = { runId };

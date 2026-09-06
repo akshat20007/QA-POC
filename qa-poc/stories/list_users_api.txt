@@ -1,0 +1,8 @@
+As an API consumer, I want to list users from the ReqRes API so that I can retrieve paginated user data.
+
+Acceptance criteria:
+- Given the ReqRes API is available at https://reqres.in
+- When I send a GET request to /api/users
+- Then the response status code should be 200
+- And the response body should contain a JSON array of users in the "data" field
+- And each user should have id, email, first_name, and last_name fields

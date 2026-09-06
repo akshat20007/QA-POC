@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { TestCase } from './types.js';
+import type { StoryType, TestCase } from './types.js';
 import type { GenerationErrorType } from './apiTypes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -11,11 +11,12 @@ const PYTHON_BIN = process.env.PYTHON_BIN ?? 'python';
 const TIMEOUT_MS = 30_000;
 
 export type GenerationOutcome =
-  | { ok: true; testCases: TestCase[] }
+  | { ok: true; storyType: StoryType; testCases: TestCase[] }
   | { ok: false; error: string; errorType: GenerationErrorType };
 
 interface SingleModeStdout {
   ok: boolean;
+  storyType?: StoryType;
   testCases?: TestCase[];
   error?: string;
   errorType?: GenerationErrorType;
@@ -59,8 +60,10 @@ export function generateOne(storyText: string): Promise<GenerationOutcome> {
       const line = stdout.trim().split('\n').pop() ?? '';
       try {
         const parsed = JSON.parse(line) as SingleModeStdout;
-        if (parsed.ok && parsed.testCases) {
-          resolve({ ok: true, testCases: parsed.testCases });
+        if (parsed.ok && parsed.testCases && parsed.storyType) {
+          resolve({ ok: true, storyType: parsed.storyType, testCases: parsed.testCases });
+        } else if (parsed.ok && parsed.testCases) {
+          resolve({ ok: true, storyType: 'ui', testCases: parsed.testCases });
         } else {
           resolve({
             ok: false,
