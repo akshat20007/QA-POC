@@ -1,0 +1,10 @@
+{
+  "name": "monitoring-tool-poc",
+  "private": true,
+  "workspaces": ["server", "web"],
+  "scripts": {
+    "server": "npm run server -w monitoring-tool-poc-server",
+    "server:dev": "npm run server:dev -w monitoring-tool-poc-server",
+    "web": "npm run dev -w monitoring-tool-poc-web"
+  }
+}
