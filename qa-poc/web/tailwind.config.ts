@@ -5,6 +5,12 @@ export default {
   theme: {
     extend: {
       colors: {
+        accent: {
+          ui: '#4f46e5',
+          'ui-bg': '#eef2ff',
+          api: '#0d9488',
+          'api-bg': '#f0fdfa',
+        },
         status: {
           pending: '#94a3b8',
           'pending-bg': '#f1f5f9',

@@ -1,14 +1,2 @@
 
-=== force_fail — Deliberately failing test for screenshot verification ===
-Result: FAIL
-  [pass] navigate — selector: goto('/')
-  [FAIL] click — locator.click: Timeout 8000ms exceeded.
-Call log:
-  - waiting for getByRole('button', { name: 'This Button Does Not Exist' })
- — screenshot: output\screenshots\cli-force_fail-step1.png
-Reason: Step "click" failed after retry: locator.click: Timeout 8000ms exceeded.
-Call log:
-  - waiting for getByRole('button', { name: 'This Button Does Not Exist' })
-
-
-=== Summary: 0/1 test cases PASSED ===
+=== Summary: 0/0 test cases PASSED ===

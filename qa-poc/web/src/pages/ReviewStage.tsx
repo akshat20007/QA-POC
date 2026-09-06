@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { useAppState } from '../state/AppStateContext';
-import type { IdentifiedTestCase, TranslationError } from '../api/types';
+import type { IdentifiedTestCase, StoryType, TranslationError } from '../api/types';
 import { TestCaseCard } from '../components/TestCaseCard';
 import { Button } from '../components/Button';
-import { WarningBadge } from '../components/Badge';
+import { StoryTypeBadge, WarningBadge } from '../components/Badge';
 import { validateTestCases, createRun } from '../api/client';
+import { accentFor } from '../theme/storyAccent';
 
 interface TestCaseGroup {
   key: string;
   heading: string | null;
+  storyType: StoryType;
   items: IdentifiedTestCase[];
 }
 
-/** Groups by source story (in submission order), with manually added cases trailing under one group. */
 function groupTestCases(testCases: IdentifiedTestCase[]): TestCaseGroup[] {
   const groups = new Map<string, TestCaseGroup>();
   for (const tc of testCases) {
@@ -22,7 +23,7 @@ function groupTestCases(testCases: IdentifiedTestCase[]): TestCaseGroup[] {
         tc.storyIndex !== undefined
           ? `Story ${tc.storyIndex + 1}${tc.storyPreview ? `: "${tc.storyPreview}${tc.storyPreview.length >= 80 ? '…' : ''}"` : ''}`
           : 'Manually added';
-      groups.set(key, { key, heading, items: [] });
+      groups.set(key, { key, heading, storyType: tc.storyType, items: [] });
     }
     groups.get(key)!.items.push(tc);
   }
@@ -74,8 +75,8 @@ export function ReviewStage() {
         <div>
           <h2 className="text-lg font-semibold text-slate-900">2. Review, edit, and approve</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Adjust names, priorities, categories, or individual steps. Add a test case manually or remove one you
-            don't need, then approve to run them all against the real site.
+            Adjust names, priorities, categories, or individual steps. UI stories run in Playwright;
+            API stories run as HTTP requests against the configured base URL.
           </p>
         </div>
         <Button variant="secondary" onClick={() => dispatch({ type: 'SET_STAGE', stage: 'input' })}>
@@ -105,20 +106,29 @@ export function ReviewStage() {
       )}
 
       <div className="space-y-6">
-        {groupTestCases(state.testCases).map((group) => (
-          <div key={group.key} className="space-y-4">
-            {group.heading && <h3 className="text-sm font-semibold text-slate-700">{group.heading}</h3>}
-            {group.items.map(({ id, testCase }) => (
-              <TestCaseCard
-                key={id}
-                testCase={testCase}
-                errors={errorsById[id] ?? []}
-                onChange={(next) => dispatch({ type: 'UPDATE_TEST_CASE', id, testCase: next })}
-                onDelete={() => dispatch({ type: 'DELETE_TEST_CASE', id })}
-              />
-            ))}
-          </div>
-        ))}
+        {groupTestCases(state.testCases).map((group) => {
+          const accent = accentFor(group.storyType);
+          return (
+            <div key={group.key} className={`space-y-4 rounded-lg border p-4 ${accent.groupBg}`}>
+              {group.heading && (
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-700">{group.heading}</h3>
+                  <StoryTypeBadge storyType={group.storyType} />
+                </div>
+              )}
+              {group.items.map(({ id, testCase, storyType }) => (
+                <TestCaseCard
+                  key={id}
+                  testCase={testCase}
+                  storyType={storyType}
+                  errors={errorsById[id] ?? []}
+                  onChange={(next) => dispatch({ type: 'UPDATE_TEST_CASE', id, testCase: next })}
+                  onDelete={() => dispatch({ type: 'DELETE_TEST_CASE', id })}
+                />
+              ))}
+            </div>
+          );
+        })}
       </div>
 
       <Button variant="secondary" type="button" onClick={() => dispatch({ type: 'ADD_TEST_CASE' })}>

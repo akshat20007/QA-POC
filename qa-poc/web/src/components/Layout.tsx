@@ -47,7 +47,7 @@ export function Layout({ stage, children }: { stage: Stage; children: ReactNode 
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <h1 className="text-2xl font-bold text-slate-900">QA Agent</h1>
-          <p className="mt-1 text-sm text-slate-500">Generate, review, and run Playwright test cases from plain-English user stories.</p>
+          <p className="mt-1 text-sm text-slate-500">Generate, review, and run UI or API test cases from plain-English user stories.</p>
           <div className="mt-4">
             <Stepper current={stage} />
           </div>

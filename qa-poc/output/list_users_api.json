@@ -1,0 +1,146 @@
+{
+  "storyType": "api",
+  "testCases": [
+    {
+      "name": "List users with default pagination",
+      "priority": "high",
+      "category": "happy-path",
+      "steps": [
+        {
+          "type": "given",
+          "action": "the ReqRes API is available",
+          "target_hint": "https://reqres.in"
+        },
+        {
+          "type": "when",
+          "action": "send GET request",
+          "target_hint": "GET /api/users"
+        },
+        {
+          "type": "then",
+          "action": "assert status code",
+          "target_hint": "status: 200"
+        },
+        {
+          "type": "then",
+          "action": "assert JSON field",
+          "target_hint": "json: page",
+          "value": "1"
+        },
+        {
+          "type": "then",
+          "action": "assert JSON field",
+          "target_hint": "json: data[0].email",
+          "value": "george.bluth@reqres.in"
+        }
+      ]
+    },
+    {
+      "name": "List users with custom page query parameter",
+      "priority": "medium",
+      "category": "happy-path",
+      "steps": [
+        {
+          "type": "given",
+          "action": "the ReqRes API is available",
+          "target_hint": "https://reqres.in"
+        },
+        {
+          "type": "when",
+          "action": "send GET request",
+          "target_hint": "GET /api/users?page=2"
+        },
+        {
+          "type": "then",
+          "action": "assert status code",
+          "target_hint": "status: 200"
+        },
+        {
+          "type": "then",
+          "action": "assert JSON field",
+          "target_hint": "json: page",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "name": "List users with custom per_page query parameter",
+      "priority": "low",
+      "category": "edge-case",
+      "steps": [
+        {
+          "type": "given",
+          "action": "the ReqRes API is available",
+          "target_hint": "https://reqres.in"
+        },
+        {
+          "type": "when",
+          "action": "send GET request",
+          "target_hint": "GET /api/users?per_page=3"
+        },
+        {
+          "type": "then",
+          "action": "assert status code",
+          "target_hint": "status: 200"
+        },
+        {
+          "type": "then",
+          "action": "assert JSON field",
+          "target_hint": "json: per_page",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "List users on non-existent page returns empty data array",
+      "priority": "low",
+      "category": "edge-case",
+      "steps": [
+        {
+          "type": "given",
+          "action": "the ReqRes API is available",
+          "target_hint": "https://reqres.in"
+        },
+        {
+          "type": "when",
+          "action": "send GET request",
+          "target_hint": "GET /api/users?page=999"
+        },
+        {
+          "type": "then",
+          "action": "assert status code",
+          "target_hint": "status: 200"
+        },
+        {
+          "type": "then",
+          "action": "assert JSON field",
+          "target_hint": "json: page",
+          "value": "999"
+        }
+      ]
+    },
+    {
+      "name": "List users response headers check",
+      "priority": "low",
+      "category": "happy-path",
+      "steps": [
+        {
+          "type": "given",
+          "action": "the ReqRes API is available",
+          "target_hint": "https://reqres.in"
+        },
+        {
+          "type": "when",
+          "action": "send GET request",
+          "target_hint": "GET /api/users"
+        },
+        {
+          "type": "then",
+          "action": "assert response header",
+          "target_hint": "header: Content-Type",
+          "value": "application/json; charset=utf-8"
+        }
+      ]
+    }
+  ]
+}

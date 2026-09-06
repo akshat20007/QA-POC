@@ -1,7 +1,7 @@
-
-=== add_to_cart.txt ===
-Generated 5 test cases
-[
+[UI] 
+=== add_to_cart.txt (UI) ===
+[UI] Generated 5 test cases
+[UI] [
   {
     "name": "Add product to cart and verify cart count and contents",
     "priority": "high",
@@ -31,30 +31,69 @@ Generated 5 test cases
       },
       {
         "type": "when",
-        "action": "click add to cart button",
+        "action": "click add to cart for backpack",
         "target_hint": "button: Add to cart"
       },
       {
         "type": "then",
-        "action": "assert cart badge count is visible",
-        "target_hint": "1"
+        "action": "assert cart badge is visible",
+        "target_hint": "shopping_cart_link"
       },
       {
         "type": "when",
         "action": "click cart icon",
-        "target_hint": "css: .shopping_cart_link"
+        "target_hint": "shopping_cart_link"
       },
       {
         "type": "then",
-        "action": "assert product name in cart",
-        "target_hint": "Sauce Labs Backpack"
+        "action": "assert product is in cart",
+        "target_hint": "link: Sauce Labs Backpack"
+      }
+    ]
+  },
+  {
+    "name": "Toggle add to cart button to remove after adding product",
+    "priority": "medium",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "when",
+        "action": "click add to cart for backpack",
+        "target_hint": "button: Add to cart"
+      },
+      {
+        "type": "then",
+        "action": "assert button text changes to remove",
+        "target_hint": "button: Remove"
       }
     ]
   },
   {
     "name": "Add multiple distinct products to cart",
     "priority": "medium",
-    "category": "happy-path",
+    "category": "edge-case",
     "steps": [
       {
         "type": "given",
@@ -90,15 +129,15 @@ Generated 5 test cases
       },
       {
         "type": "then",
-        "action": "assert cart badge count shows two items",
-        "target_hint": "2"
+        "action": "assert cart badge shows two items",
+        "target_hint": "shopping_cart_link"
       }
     ]
   },
   {
-    "name": "Toggle product add to cart button to remove state",
+    "name": "Remove product from cart and verify badge update",
     "priority": "medium",
-    "category": "edge-case",
+    "category": "happy-path",
     "steps": [
       {
         "type": "given",
@@ -124,64 +163,25 @@ Generated 5 test cases
       },
       {
         "type": "when",
-        "action": "click add to cart button",
-        "target_hint": "button: Add to cart"
-      },
-      {
-        "type": "then",
-        "action": "assert button text changes to remove",
-        "target_hint": "button: Remove"
-      }
-    ]
-  },
-  {
-    "name": "Remove product from cart and verify badge disappears",
-    "priority": "medium",
-    "category": "edge-case",
-    "steps": [
-      {
-        "type": "given",
-        "action": "navigate to login page",
-        "target_hint": "url: /"
-      },
-      {
-        "type": "when",
-        "action": "fill username",
-        "target_hint": "textbox: Username",
-        "value": "standard_user"
-      },
-      {
-        "type": "when",
-        "action": "fill password",
-        "target_hint": "textbox: Password",
-        "value": "secret_sauce"
-      },
-      {
-        "type": "when",
-        "action": "click login button",
-        "target_hint": "button: Login"
-      },
-      {
-        "type": "when",
-        "action": "click add to cart button",
+        "action": "click add to cart for backpack",
         "target_hint": "button: Add to cart"
       },
       {
         "type": "when",
-        "action": "click remove button",
+        "action": "click remove button for backpack",
         "target_hint": "button: Remove"
       },
       {
         "type": "then",
         "action": "assert cart badge is absent",
-        "target_hint": "css: .shopping_cart_badge"
+        "target_hint": "shopping_cart_link"
       }
     ]
   },
   {
-    "name": "Attempt to access cart page when unauthenticated",
-    "priority": "high",
-    "category": "negative",
+    "name": "Attempt to view cart when empty",
+    "priority": "low",
+    "category": "edge-case",
     "steps": [
       {
         "type": "given",
@@ -189,48 +189,194 @@ Generated 5 test cases
         "target_hint": "url: /"
       },
       {
-        "type": "given",
+        "type": "when",
         "action": "fill username",
         "target_hint": "textbox: Username",
         "value": "standard_user"
       },
       {
-        "type": "given",
+        "type": "when",
         "action": "fill password",
         "target_hint": "textbox: Password",
         "value": "secret_sauce"
       },
       {
-        "type": "given",
+        "type": "when",
         "action": "click login button",
         "target_hint": "button: Login"
       },
       {
-        "type": "given",
-        "action": "navigate directly to cart page",
-        "target_hint": "url: /cart.html"
+        "type": "when",
+        "action": "click cart icon",
+        "target_hint": "shopping_cart_link"
       },
       {
         "type": "then",
-        "action": "assert error message visible",
-        "target_hint": "Epic sadface: You can only access /cart.html when logged in."
+        "action": "assert cart is empty",
+        "target_hint": "Your Cart"
       }
     ]
   }
 ]
-
-=== login_invalid.txt ===
-Generated 5 test cases
-[
+[API] 
+=== list_users_api.txt (API) ===
+[API] Generated 5 test cases
+[API] [
   {
-    "name": "Invalid username and password login attempt",
+    "name": "List users with default pagination",
+    "priority": "high",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "the ReqRes API is available",
+        "target_hint": "https://reqres.in"
+      },
+      {
+        "type": "when",
+        "action": "send GET request",
+        "target_hint": "GET /api/users"
+      },
+      {
+        "type": "then",
+        "action": "assert status code",
+        "target_hint": "status: 200"
+      },
+      {
+        "type": "then",
+        "action": "assert JSON field",
+        "target_hint": "json: page",
+        "value": "1"
+      },
+      {
+        "type": "then",
+        "action": "assert JSON field",
+        "target_hint": "json: data[0].email",
+        "value": "george.bluth@reqres.in"
+      }
+    ]
+  },
+  {
+    "name": "List users with custom page query parameter",
+    "priority": "medium",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "the ReqRes API is available",
+        "target_hint": "https://reqres.in"
+      },
+      {
+        "type": "when",
+        "action": "send GET request",
+        "target_hint": "GET /api/users?page=2"
+      },
+      {
+        "type": "then",
+        "action": "assert status code",
+        "target_hint": "status: 200"
+      },
+      {
+        "type": "then",
+        "action": "assert JSON field",
+        "target_hint": "json: page",
+        "value": "2"
+      }
+    ]
+  },
+  {
+    "name": "List users with custom per_page query parameter",
+    "priority": "low",
+    "category": "edge-case",
+    "steps": [
+      {
+        "type": "given",
+        "action": "the ReqRes API is available",
+        "target_hint": "https://reqres.in"
+      },
+      {
+        "type": "when",
+        "action": "send GET request",
+        "target_hint": "GET /api/users?per_page=3"
+      },
+      {
+        "type": "then",
+        "action": "assert status code",
+        "target_hint": "status: 200"
+      },
+      {
+        "type": "then",
+        "action": "assert JSON field",
+        "target_hint": "json: per_page",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "name": "List users on non-existent page returns empty data array",
+    "priority": "low",
+    "category": "edge-case",
+    "steps": [
+      {
+        "type": "given",
+        "action": "the ReqRes API is available",
+        "target_hint": "https://reqres.in"
+      },
+      {
+        "type": "when",
+        "action": "send GET request",
+        "target_hint": "GET /api/users?page=999"
+      },
+      {
+        "type": "then",
+        "action": "assert status code",
+        "target_hint": "status: 200"
+      },
+      {
+        "type": "then",
+        "action": "assert JSON field",
+        "target_hint": "json: page",
+        "value": "999"
+      }
+    ]
+  },
+  {
+    "name": "List users response headers check",
+    "priority": "low",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "the ReqRes API is available",
+        "target_hint": "https://reqres.in"
+      },
+      {
+        "type": "when",
+        "action": "send GET request",
+        "target_hint": "GET /api/users"
+      },
+      {
+        "type": "then",
+        "action": "assert response header",
+        "target_hint": "header: Content-Type",
+        "value": "application/json; charset=utf-8"
+      }
+    ]
+  }
+]
+[UI] 
+=== login_invalid.txt (UI) ===
+[UI] Generated 5 test cases
+[UI] [
+  {
+    "name": "Login with invalid username and invalid password",
     "priority": "high",
     "category": "negative",
     "steps": [
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -257,14 +403,14 @@ Generated 5 test cases
     ]
   },
   {
-    "name": "Locked out user login attempt",
+    "name": "Login with locked out user account",
     "priority": "high",
     "category": "negative",
     "steps": [
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -291,7 +437,7 @@ Generated 5 test cases
     ]
   },
   {
-    "name": "Empty username login attempt",
+    "name": "Login with empty username and password fields",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -320,13 +466,7 @@ Generated 5 test cases
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
-      },
-      {
-        "type": "when",
-        "action": "fill password",
-        "target_hint": "textbox: Password",
-        "value": "secret_sauce"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -341,8 +481,42 @@ Generated 5 test cases
     ]
   },
   {
-    "name": "Empty password login attempt",
-    "priority": "medium",
+    "name": "Login with valid credentials successfully",
+    "priority": "high",
+    "category": "happy-path",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "then",
+        "action": "assert inventory page visible",
+        "target_hint": "Products"
+      }
+    ]
+  },
+  {
+    "name": "Login with valid username and incorrect password",
+    "priority": "high",
     "category": "negative",
     "steps": [
       {
@@ -351,32 +525,16 @@ Generated 5 test cases
         "target_hint": "url: /"
       },
       {
-        "type": "given",
-        "action": "fill username",
-        "target_hint": "textbox: Username",
-        "value": "standard_user"
-      },
-      {
-        "type": "given",
-        "action": "fill password",
-        "target_hint": "textbox: Password",
-        "value": "secret_sauce"
-      },
-      {
-        "type": "given",
-        "action": "click login button",
-        "target_hint": "button: Login"
-      },
-      {
-        "type": "given",
-        "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
-      },
-      {
         "type": "when",
         "action": "fill username",
         "target_hint": "textbox: Username",
         "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "wrong_password"
       },
       {
         "type": "when",
@@ -386,51 +544,17 @@ Generated 5 test cases
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Password is required"
-      }
-    ]
-  },
-  {
-    "name": "Successful login with standard user",
-    "priority": "high",
-    "category": "happy-path",
-    "steps": [
-      {
-        "type": "given",
-        "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
-      },
-      {
-        "type": "when",
-        "action": "fill username",
-        "target_hint": "textbox: Username",
-        "value": "standard_user"
-      },
-      {
-        "type": "when",
-        "action": "fill password",
-        "target_hint": "textbox: Password",
-        "value": "secret_sauce"
-      },
-      {
-        "type": "when",
-        "action": "click login button",
-        "target_hint": "button: Login"
-      },
-      {
-        "type": "then",
-        "action": "assert inventory page is displayed",
-        "target_hint": "url: /inventory.html"
+        "target_hint": "Epic sadface: Username and password do not match any user in this service"
       }
     ]
   }
 ]
-
-=== login_valid.txt ===
-Generated 5 test cases
-[
+[UI] 
+=== login_valid.txt (UI) ===
+[UI] Generated 5 test cases
+[UI] [
   {
-    "name": "Successful login with valid credentials",
+    "name": "Successful login with valid standard user credentials",
     "priority": "high",
     "category": "happy-path",
     "steps": [
@@ -458,7 +582,7 @@ Generated 5 test cases
       },
       {
         "type": "then",
-        "action": "assert redirected to inventory page",
+        "action": "assert inventory page URL",
         "target_hint": "url: /inventory.html"
       },
       {
@@ -469,7 +593,7 @@ Generated 5 test cases
     ]
   },
   {
-    "name": "Failed login with locked out user",
+    "name": "Failed login with locked out user account",
     "priority": "high",
     "category": "negative",
     "steps": [
@@ -581,7 +705,7 @@ Generated 5 test cases
     ]
   },
   {
-    "name": "Failed login with empty password",
+    "name": "Failed login with empty password only",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -632,4 +756,4 @@ Generated 5 test cases
   }
 ]
 
-=== Summary: 3/3 stories produced valid JSON (15 total test cases) ===
+=== Summary: 4/4 stories produced valid JSON (20 total test cases) ===

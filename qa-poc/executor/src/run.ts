@@ -2,9 +2,10 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EventEmitter } from 'node:events';
+import pc from 'picocolors';
 import { runTestCases } from './runner.js';
 import type { RunnableTestCase } from './runner.js';
-import type { TestCase } from './types.js';
+import type { StoryType, TestCase } from './types.js';
 import type { TestReport } from './apiTypes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,7 +14,24 @@ const RESULTS_LOG = path.join(OUTPUT_DIR, 'execution-results.log');
 
 interface TestFile {
   fileStem: string;
+  storyType: StoryType;
   testCase: TestCase;
+}
+
+interface WrappedOutput {
+  storyType?: StoryType;
+  testCases?: TestCase[];
+}
+
+function parseJsonFile(content: string): { storyType: StoryType; testCases: TestCase[] } {
+  const parsed = JSON.parse(content) as TestCase[] | TestCase | WrappedOutput;
+  if (Array.isArray(parsed)) {
+    return { storyType: 'ui', testCases: parsed };
+  }
+  if ('testCases' in parsed && Array.isArray(parsed.testCases)) {
+    return { storyType: parsed.storyType ?? 'ui', testCases: parsed.testCases };
+  }
+  return { storyType: 'ui', testCases: [parsed as TestCase] };
 }
 
 function loadTestFiles(): TestFile[] {
@@ -22,24 +40,36 @@ function loadTestFiles(): TestFile[] {
     .sort()
     .flatMap((f) => {
       const stem = path.basename(f, '.json');
-      const parsed = JSON.parse(readFileSync(path.join(OUTPUT_DIR, f), 'utf-8')) as TestCase | TestCase[];
-      const testCases = Array.isArray(parsed) ? parsed : [parsed];
+      const { storyType, testCases } = parseJsonFile(readFileSync(path.join(OUTPUT_DIR, f), 'utf-8'));
       return testCases.map((testCase, i) => ({
         fileStem: testCases.length > 1 ? `${stem}_${i + 1}` : stem,
+        storyType,
         testCase,
       }));
     });
 }
 
-function formatReport(reports: TestReport[]): string {
+function typeColor(storyType: StoryType) {
+  return storyType === 'api' ? pc.cyan : pc.magenta;
+}
+
+function formatReport(reports: TestReport[], storyTypes: Map<string, StoryType>): string {
   const lines: string[] = [];
+  let currentType: StoryType | null = null;
+
   for (const r of reports) {
-    lines.push(`\n=== ${r.id} — ${r.name} ===`);
+    const storyType = storyTypes.get(r.id) ?? 'ui';
+    if (storyType !== currentType) {
+      currentType = storyType;
+      const tag = storyType === 'api' ? '[API]' : '[UI]';
+      lines.push(typeColor(storyType)(`\n--- ${tag} ---`));
+    }
+    lines.push(typeColor(storyType)(`\n=== ${r.id} — ${r.name} ===`));
     lines.push(`Result: ${r.outcome}`);
     for (const s of r.steps) {
       const marker = s.outcome === 'pass' ? '  [pass]' : '  [FAIL]';
-      const screenshotNote = s.screenshotPath ? ` — screenshot: ${s.screenshotPath}` : '';
-      lines.push(`${marker} ${s.action}${s.selectorUsed ? ` — selector: ${s.selectorUsed}` : ''}${s.error ? ` — ${s.error}` : ''}${screenshotNote}`);
+      const detail = s.selectorUsed ? ` — ${s.selectorUsed}` : '';
+      lines.push(`${marker} ${s.action}${detail}${s.error ? ` — ${s.error}` : ''}`);
     }
     if (r.reason) lines.push(`Reason: ${r.reason}`);
   }
@@ -57,21 +87,20 @@ async function main() {
 
   const headless = process.env.HEADLESS !== 'false';
 
-  // id === fileStem for CLI runs, so the log's "=== <id> — <name> ===" header matches
-  // the pre-refactor "=== <file> — <name> ===" output exactly. Login preconditions are
-  // handled by generate.py's ensure_login_precondition, which prepends real login steps
-  // to the JSON itself - no separate code-level hook needed here.
-  const runnable: RunnableTestCase[] = testFiles.map(({ fileStem, testCase }) => ({
+  const runnable: RunnableTestCase[] = testFiles.map(({ fileStem, storyType, testCase }) => ({
     id: fileStem,
+    storyType,
     testCase,
   }));
+
+  const storyTypes = new Map(runnable.map((r) => [r.id, r.storyType]));
 
   const emitter = new EventEmitter();
   const reports = await runTestCases('cli', runnable, emitter, { headless });
 
-  const report = formatReport(reports);
+  const report = formatReport(reports, storyTypes);
   console.log(report);
-  writeFileSync(RESULTS_LOG, report + '\n', 'utf-8');
+  writeFileSync(RESULTS_LOG, report.replace(/\x1b\[[0-9;]*m/g, '') + '\n', 'utf-8');
 }
 
 main();
