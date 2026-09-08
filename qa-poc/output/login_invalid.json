@@ -7,7 +7,7 @@
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -29,7 +29,7 @@
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Username and password do not match any user in this service"
+        "target_hint": "text: Epic sadface: Username and password do not match any user in this service"
       }
     ]
   },
@@ -41,7 +41,7 @@
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -63,12 +63,12 @@
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Sorry, this user has been locked out."
+        "target_hint": "text: Epic sadface: Sorry, this user has been locked out."
       }
     ]
   },
   {
-    "name": "Empty username login attempt",
+    "name": "Blank username login attempt",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -97,7 +97,7 @@
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -113,12 +113,12 @@
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Username is required"
+        "target_hint": "text: Epic sadface: Username is required"
       }
     ]
   },
   {
-    "name": "Empty password login attempt",
+    "name": "Blank password login attempt",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -147,7 +147,7 @@
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -163,19 +163,19 @@
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Password is required"
+        "target_hint": "text: Epic sadface: Password is required"
       }
     ]
   },
   {
-    "name": "Successful login with standard user",
+    "name": "Successful login with valid standard user credentials",
     "priority": "high",
     "category": "happy-path",
     "steps": [
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -196,8 +196,8 @@
       },
       {
         "type": "then",
-        "action": "assert inventory page is displayed",
-        "target_hint": "url: /inventory.html"
+        "action": "assert inventory page loaded",
+        "target_hint": "text: Products"
       }
     ]
   }

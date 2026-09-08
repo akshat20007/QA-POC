@@ -21,7 +21,7 @@ Key elements:
 - button, name: "Open Menu" (hamburger, top-left) — reveals side nav
 - img, name: "Open Menu" (icon inside the button)
 - text: "Swag Labs" (header title, plain text generic node, not a heading)
-- generic node holding the cart badge count (e.g. `"1"`) — plain text, not labeled; see cart icon caveat below
+- cart badge count (e.g. `"1"`), `testid: shopping-cart-badge`; see cart icon caveats below
 - text: "Products" (page heading area, plain text generic node, not an ARIA `heading`)
 - combobox (sort dropdown), preceded by visible label text "Name (A to Z)" (current selection) — options:
   - option "Name (A to Z)" (default/selected)
@@ -44,7 +44,8 @@ Key elements:
 - footer (see Footer section below)
 
 Caveats:
-- The cart icon itself (top-right, links to `cart.html`) is an `<a class="shopping_cart_link" data-test="shopping-cart-link">` wrapping only an SVG — it has **no accessible role/name** and does **not** appear as a `link` node in the accessibility snapshot at all (confirmed by targeted `browser_find` for "cart"/"shopping" turning up nothing, then clicking it via CSS selector `.shopping_cart_link` directly). `getByRole('link', {name: ...})` will NOT find it. The badge count next to it is a separate plain-text generic node (not a `status`/`badge` role), shows only when count > 0, and disappears entirely (not "0") when the cart is empty.
+- The cart icon itself (top-right, links to `cart.html`) is an `<a class="shopping_cart_link" data-test="shopping-cart-link">` wrapping only an SVG — it has **no accessible role/name** and does **not** appear as a `link` node in the accessibility snapshot at all (confirmed by targeted `browser_find` for "cart"/"shopping" turning up nothing). `getByRole('link', {name: ...})` will NOT find it. Use target_hint `"testid: shopping-cart-link"` instead (its `data-test` attribute). This link element is **always present and visible**, regardless of cart contents - never assert it becomes hidden/absent.
+- The item count badge is a SEPARATE, nested element: `<span class="shopping_cart_badge" data-test="shopping-cart-badge">1</span>` inside the link above (confirmed by direct DOM inspection). It is only rendered at all when the cart has 1+ items - it disappears entirely from the DOM (not shown as "0") when the cart is emptied. Use target_hint `"testid: shopping-cart-badge"` for it. **To assert an empty cart, check that `testid: shopping-cart-badge` is hidden/absent - never the cart link itself, which never hides.**
 - "Products" and "Swag Labs" header text are plain generic nodes, not `heading` role elements — do not target them with `getByRole('heading', ...)`.
 
 ### Product detail page — https://www.saucedemo.com/inventory-item.html?id=N
@@ -140,7 +141,7 @@ Opened via button "Open Menu" (top-left); reveals:
 3. Cart badge (plain text node next to the icon-only cart link) appeared showing "1".
 
 ### View cart / checkout (full happy path, single item)
-1. Clicked the cart icon (`.shopping_cart_link` — no accessible name, use CSS/data-test selector, not `getByRole`) → navigated to cart.html. Row shows qty "1", "Sauce Labs Backpack", "$29.99", button "Remove".
+1. Clicked the cart icon (`testid: shopping-cart-link` — no accessible name, do not use `getByRole`) → navigated to cart.html. Row shows qty "1", "Sauce Labs Backpack", "$29.99", button "Remove".
 2. Clicked button "Checkout" → navigated to checkout-step-one.html.
 3. Clicked "Continue" with all fields empty → error `"Error: First Name is required"` (heading level 3, same close-button pattern as login errors).
 4. Filled First Name "Jane", Last Name "Doe", Zip/Postal Code "94107". Clicked "Continue" → navigated to checkout-step-two.html, showing item, "SauceCard #31337", "Free Pony Express Delivery!", "Item total: $29.99", "Tax: $2.40", "Total: $32.39".
@@ -152,7 +153,7 @@ Opened via button "Open Menu" (top-left); reveals:
 2. Clicked "Logout" (`data-test="logout-sidebar-link"`) → navigated back to https://www.saucedemo.com/ (login page), session ended.
 
 ## Caveats / open questions
-- The cart icon link (`.shopping_cart_link`, `data-test="shopping-cart-link"`) has **no accessible role/name** in the accessibility tree — Playwright `getByRole('link', ...)` cannot target it; test generation must fall back to a CSS/data-test/text-adjacent strategy or this element needs special-casing.
+- The cart icon link (`.shopping_cart_link`, `data-test="shopping-cart-link"`) has **no accessible role/name** in the accessibility tree — Playwright `getByRole('link', ...)` cannot target it; use target_hint `"testid: shopping-cart-link"` instead.
 - Several icon+text buttons ("Continue Shopping", "Cancel", "Back to products") combine an `img` (e.g. alt "Go back") with visible text; exact concatenated accessible name was not empirically confirmed via a dedicated accessible-name query — treat name matching on these as slightly uncertain and prefer matching the visible text portion.
 - `problem_user`, `performance_glitch_user`, `error_user`, `visual_user` were not logged in during this pass — their specific broken behaviors (known from general Sauce Demo lore: e.g. `problem_user` has broken images/can't complete checkout name changes, `performance_glitch_user` is slow, `error_user`/`visual_user` have assorted UI bugs) were not directly observed/verified here.
 - Per-field validation errors for missing Last Name / missing Postal Code specifically (as opposed to First Name) were not individually triggered — only the empty-all-fields case (which surfaces the First Name error first) was confirmed.

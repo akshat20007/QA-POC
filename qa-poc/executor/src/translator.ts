@@ -54,6 +54,14 @@ export function parseTargetHint(hint: string): LocatorSpec {
     return { strategy: 'text', text: textMatch[1].trim() };
   }
 
+  // For elements with no accessible role/name at all (a documented reference caveat, not a
+  // guess) - e.g. an icon-only link wrapping just an SVG. Maps to page.getByTestId(), matched
+  // against this site's own data-test attribute (see executor.ts's setTestIdAttribute call).
+  const testIdMatch = /^testid:\s*(.+)$/i.exec(trimmed);
+  if (testIdMatch) {
+    return { strategy: 'testid', testId: testIdMatch[1].trim() };
+  }
+
   return { strategy: 'text', text: trimmed };
 }
 
@@ -149,11 +157,15 @@ export function translateStep(step: TestStep): TranslatedStep {
   let text: string;
   if (locator.strategy === 'text') {
     text = locator.text;
-  } else if (locator.name !== undefined) {
+  } else if (locator.strategy === 'role' && locator.name !== undefined) {
     text = locator.name;
+  } else if (locator.strategy === 'testid' && step.value) {
+    // A bare testid carries no expected text of its own (unlike text:/named role: hints) -
+    // generate.py's prompt has the LLM supply the expected text via "value" in this case.
+    text = step.value;
   } else {
     throw new StepTranslationError(
-      `checkText step "${step.action}" needs a named target_hint to check for; a nameless role hint has no expected text`,
+      `checkText step "${step.action}" needs a named target_hint or a "value" (for testid hints) to check for`,
     );
   }
   return { kind: 'checkText', locator, text };

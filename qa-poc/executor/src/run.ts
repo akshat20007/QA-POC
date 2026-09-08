@@ -2,13 +2,16 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EventEmitter } from 'node:events';
+import dotenv from 'dotenv';
 import { runTestCases } from './runner.js';
 import type { RunnableTestCase } from './runner.js';
 import type { TestCase } from './types.js';
 import type { TestReport } from './apiTypes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const OUTPUT_DIR = path.join(__dirname, '..', '..', 'output');
+const QA_POC_ROOT = path.join(__dirname, '..', '..');
+dotenv.config({ path: path.join(QA_POC_ROOT, '.env') });
+const OUTPUT_DIR = path.join(QA_POC_ROOT, 'output');
 const RESULTS_LOG = path.join(OUTPUT_DIR, 'execution-results.log');
 
 interface TestFile {
@@ -33,18 +36,25 @@ function loadTestFiles(): TestFile[] {
 
 function formatReport(reports: TestReport[]): string {
   const lines: string[] = [];
+  let disambiguatedSteps = 0;
   for (const r of reports) {
     lines.push(`\n=== ${r.id} — ${r.name} ===`);
     lines.push(`Result: ${r.outcome}`);
     for (const s of r.steps) {
       const marker = s.outcome === 'pass' ? '  [pass]' : '  [FAIL]';
       const screenshotNote = s.screenshotPath ? ` — screenshot: ${s.screenshotPath}` : '';
-      lines.push(`${marker} ${s.action}${s.selectorUsed ? ` — selector: ${s.selectorUsed}` : ''}${s.error ? ` — ${s.error}` : ''}${screenshotNote}`);
+      const disambiguationNote = s.disambiguated
+        ? ` — auto-disambiguated: ${s.disambiguationDetail}`
+        : s.disambiguationAttempted
+          ? ' — disambiguation attempted, still failed'
+          : '';
+      if (s.disambiguated) disambiguatedSteps += 1;
+      lines.push(`${marker} ${s.action}${s.selectorUsed ? ` — selector: ${s.selectorUsed}` : ''}${s.error ? ` — ${s.error}` : ''}${screenshotNote}${disambiguationNote}`);
     }
     if (r.reason) lines.push(`Reason: ${r.reason}`);
   }
   const passed = reports.filter((r) => r.outcome === 'PASS').length;
-  lines.push(`\n=== Summary: ${passed}/${reports.length} test cases PASSED ===`);
+  lines.push(`\n=== Summary: ${passed}/${reports.length} test cases PASSED (${disambiguatedSteps} step(s) auto-disambiguated) ===`);
   return lines.join('\n');
 }
 

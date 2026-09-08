@@ -16,7 +16,8 @@ export interface TestCase {
 
 export type LocatorSpec =
   | { strategy: 'role'; role: string; name?: string }
-  | { strategy: 'text'; text: string };
+  | { strategy: 'text'; text: string }
+  | { strategy: 'testid'; testId: string };
 
 export type TranslatedStep =
   | { kind: 'navigate'; url: string }

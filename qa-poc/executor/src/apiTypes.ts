@@ -62,6 +62,15 @@ export interface StepResultPayload {
   screenshot?: string;
   /** Path (relative to qa-poc/) of the same screenshot as saved to disk. Only set when outcome is 'fail'. */
   screenshotPath?: string;
+  /** True if this step's locator hit a Playwright strict-mode violation (N>1 matches) and was
+   * resolved via the live disambiguation fallback (disambiguate.ts) instead of failing outright. */
+  disambiguated?: boolean;
+  /** Human-readable resolved selector, e.g. "...filter({ hasText: 'Sauce Labs Bike Light' })" or
+   * "...nth(1)". Only set when disambiguated is true. */
+  disambiguationDetail?: string;
+  /** True whenever a strict-mode violation was hit and the fallback was attempted, regardless of
+   * outcome - lets a FAILED step's report distinguish "not applicable" from "tried, still failed." */
+  disambiguationAttempted?: boolean;
 }
 
 export interface TestStartPayload {
@@ -86,6 +95,8 @@ export interface RunSummary {
   total: number;
   passed: number;
   failed: number;
+  /** Count of steps, across the whole run, resolved via the live disambiguation fallback. */
+  disambiguatedSteps: number;
 }
 
 export interface RunCompletePayload {
@@ -115,6 +126,15 @@ export interface StepReport {
   screenshot?: string;
   /** Path (relative to qa-poc/) of the same screenshot as saved to disk. Only set when outcome is 'fail'. */
   screenshotPath?: string;
+  /** True if this step's locator hit a Playwright strict-mode violation (N>1 matches) and was
+   * resolved via the live disambiguation fallback (disambiguate.ts) instead of failing outright. */
+  disambiguated?: boolean;
+  /** Human-readable resolved selector, e.g. "...filter({ hasText: 'Sauce Labs Bike Light' })" or
+   * "...nth(1)". Only set when disambiguated is true. */
+  disambiguationDetail?: string;
+  /** True whenever a strict-mode violation was hit and the fallback was attempted, regardless of
+   * outcome - lets a FAILED step's report distinguish "not applicable" from "tried, still failed." */
+  disambiguationAttempted?: boolean;
 }
 
 export interface TestReport {

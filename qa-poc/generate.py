@@ -56,19 +56,42 @@ Rules (apply to every item in the array):
 - "target_hint" must describe how to locate the element on the page: prefer accessible role plus visible
   text (e.g. "button: Login", "link: Cart", "textbox: Username") since this hint will be used to guess a
   Playwright locator. Fall back to visible text only if no clear role applies.
+- Do not infer an ARIA role from a story's own wording. Words like "title", "heading", "label", or
+  "header" in a user story describe what a human sees, not a guaranteed ARIA role - many page titles and
+  section headers are plain text nodes with no accessible role at all. Only use "heading: ..." when you
+  have independent evidence the element truly has heading semantics (e.g. a reference doc below confirms
+  it); otherwise use a "text: ..." hint for that content.
+- If a reference doc below explicitly documents an element as having NO accessible role or name at all
+  (not just an unclear one - genuinely absent, e.g. an icon-only control with nothing for getByRole or
+  getByText to match), neither a role hint nor a "text: ..." hint can ever work for it. In that case, if
+  the reference also gives that element's "data-test" attribute value, use "testid: <that value>" (e.g.
+  "testid: shopping-cart-link") instead - never invent a "css: ..." hint or any other selector syntax not
+  described here.
 - "action" must describe what to do in a few words (e.g. "fill username", "click login button",
   "assert error message visible"). Keep it short and unambiguous.
+- If the story identifies one specific item among several similar ones (e.g. one product on a page
+  listing several products), "action" must name that specific item, not just the generic control (e.g.
+  "click add to cart button for Sauce Labs Backpack", not "click add to cart button"). This matters most
+  for repeated controls - like one "Add to cart" button per product - where the generic action text alone
+  can't tell which instance is meant.
 - "value" must be included whenever "action" is a fill-type action (filling in a text field) or a
   select-type action (choosing an option from a dropdown), and must contain the exact realistic data to
   type or the exact visible option text to select, drawn from the story (e.g. "standard_user",
-  "secret_sauce", "Price (low to high)"). Omit "value" entirely for other actions (clicks, navigation,
-  assertions).
+  "secret_sauce", "Price (low to high)"). Omit "value" for other actions (clicks, navigation), with one
+  exception: a text-checking assertion (e.g. "assert cart badge shows 1") whose target_hint is a
+  "testid: ..." hint MUST also include "value" with the exact expected text - a bare testid carries no
+  text of its own to check, unlike a "text: ..." or named role hint.
 - For a select-type action, "target_hint" must identify the dropdown/combobox itself (e.g. "combobox: Sort
   by"), not the option being chosen - the option text goes in "value".
 - For a navigate-type action (going directly to a page by URL, e.g. "navigate to login page"),
   "target_hint" must be a URL: either a full "https://..." URL or a "url: /path" form. Never use a
   role/text hint (like "textbox: Username") for a navigate step - that belongs on the step that
   actually interacts with that element.
+- The reverse also applies: a URL or "url: ..." hint is ONLY ever valid on a navigate-type step, never
+  on an assertion step (checking something is visible/hidden/present). There is no way to assert the
+  current page URL directly - if a story implies "the user is redirected to page X" or "ends up on page
+  X", assert something on page X instead: a visible element that is unique to that page (e.g. its page
+  title/heading text, drawn from a reference doc below if available), not the URL itself.
 """
 
 TEST_CASE_SCHEMA = {
@@ -126,9 +149,15 @@ def build_system_prompt(site_context: str) -> str:
     return (
         f"{SYSTEM_PROMPT_BASE}\n\n"
         f"Reference: known site structure (use this to pick accurate target_hints - "
-        f"it lists the real accessible roles/names/caveats for this site; if an element "
-        f"has no accessible role/name per this reference, fall back to a text hint instead "
-        f"of inventing a role):\n{site_context}"
+        f"it lists the real accessible roles/names/caveats for this site, gathered by directly "
+        f"inspecting the live page's accessibility tree). This reference is authoritative and "
+        f"overrides your own guess about an element's role, including any role implied by the "
+        f"story's wording - if the reference says an element has no accessible role/name, or "
+        f"documents it as a caveat, defer to that over inventing a role, even if the story calls "
+        f"it something like a \"title\" or \"heading\". For example: if the reference states that "
+        f"a page's visible title text is a plain generic node and NOT a heading-role element, use "
+        f"\"text: <that title>\" as the target_hint - do not use \"heading: <that title>\" just "
+        f"because the story describes it as a title or heading.\n{site_context}"
     )
 
 
@@ -175,10 +204,33 @@ def _has_own_login_steps(test_case: dict) -> bool:
     return fills("username") and fills("password")
 
 
+def _tests_unauthenticated_access(test_case: dict) -> bool:
+    """True if this negative test case is deliberately about accessing the app WITHOUT an
+    existing session (e.g. navigating straight to a protected page and asserting an auth-guard
+    error), as opposed to a story that simply assumes an existing session and never said so.
+    Prepending a real login before a test like this would invert its entire purpose - the
+    assertion would time out waiting for an auth error that can no longer occur once actually
+    logged in. Requires both an auth-related keyword AND a negation keyword somewhere in the
+    test's own name/steps (not just one), and only applies to "negative" cases, to keep this
+    narrow - a login-flow test omitting one field (e.g. "login fails with empty password") is
+    already excluded via _has_own_login_steps and shouldn't also match here."""
+    if test_case.get("category") != "negative":
+        return False
+    haystack = " ".join(
+        [str(test_case.get("name", ""))]
+        + [f"{step.get('action', '')} {step.get('target_hint', '')}" for step in test_case.get("steps", [])]
+    ).lower()
+    auth_keywords = ("logged in", "log in", "login", "authenticat", "session", "unauthorized", "access denied")
+    negation_keywords = ("without", "not ", "no ", "before", "logged out", "unauthenticated")
+    return any(k in haystack for k in auth_keywords) and any(k in haystack for k in negation_keywords)
+
+
 def ensure_login_precondition(test_case: dict) -> dict:
-    """Defaults every generated test case to starting from a logged-in session, unless
-    the story's own steps already handle login explicitly (see _has_own_login_steps)."""
-    if _has_own_login_steps(test_case):
+    """Defaults every generated test case to starting from a logged-in session, unless the
+    story's own steps already handle login explicitly (see _has_own_login_steps), or the test is
+    deliberately about the unauthenticated state itself (see _tests_unauthenticated_access) -
+    prepending a login would defeat the purpose of either kind of test."""
+    if _has_own_login_steps(test_case) or _tests_unauthenticated_access(test_case):
         return test_case
     test_case["steps"] = [dict(step) for step in LOGIN_STEPS] + list(test_case.get("steps", []))
     return test_case

@@ -10,7 +10,7 @@ const liveTestCases: TestCase[] = [
     category: 'happy-path',
     steps: [
       { type: 'given', action: 'navigate to products page', target_hint: 'url: /inventory.html' },
-      { type: 'when', action: 'click add to cart button', target_hint: 'button: Add to cart' },
+      { type: 'when', action: 'click add to cart button for Sauce Labs Backpack', target_hint: 'button: Add to cart' },
       { type: 'then', action: 'assert cart badge shows 1', target_hint: 'text: 1' },
       { type: 'when', action: 'click cart icon', target_hint: 'link: 1' },
       { type: 'then', action: 'assert product is listed in cart', target_hint: 'text: Sauce Labs Backpack' },

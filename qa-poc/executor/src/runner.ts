@@ -6,6 +6,8 @@ import type { Browser, BrowserContext } from 'playwright';
 import { chromium } from 'playwright';
 import { translateTestCase } from './translator.js';
 import { applyStep, withRetry, BASE_URL, ACTION_TIMEOUT_MS } from './executor.js';
+import { disambiguate, isStrictModeViolation } from './disambiguate.js';
+import type { DisambiguationBudget, DisambiguationResult } from './disambiguate.js';
 import type { TestCase } from './types.js';
 import type { RunEvent, TestReport } from './apiTypes.js';
 
@@ -30,6 +32,10 @@ export interface RunnableTestCase {
 
 export interface RunnerOptions {
   headless?: boolean;
+  /** Caps how many live disambiguation-fallback calls (disambiguate.ts) a single runTestCases
+   * call may make, across every test case in the run - bounds worst-case LLM spend if something
+   * unexpected causes repeated strict-mode violations across a whole suite. */
+  maxDisambiguationsPerRun?: number;
 }
 
 function emit(emitter: EventEmitter, event: RunEvent): void {
@@ -51,6 +57,7 @@ async function runOne(
   index: number,
   totalTests: number,
   emitter: EventEmitter,
+  budget: DisambiguationBudget,
 ): Promise<TestReport> {
   const { id, testCase } = item;
 
@@ -86,16 +93,90 @@ async function runOne(
           payload: { testId: id, stepIndex, action: step.kind, label, outcome: 'pass', selectorUsed },
         });
       } catch (exc) {
-        const message = stripAnsi(exc instanceof Error ? exc.message : String(exc));
+        let finalExc = exc;
+        let disambiguationAttempted = false;
+
+        // Only a strict-mode violation (N>1 matches) is eligible for live disambiguation - a
+        // "0 matches" failure is a different, unrelated problem (wrong role/name entirely) that
+        // this fallback must not attempt to paper over. navigate steps have no locator at all.
+        if (step.kind !== 'navigate') {
+          const violation = isStrictModeViolation(exc);
+          if (violation) {
+            disambiguationAttempted = true;
+            const resolved = await disambiguate({
+              page,
+              locatorSpec: step.locator,
+              actionLabel: label,
+              stepKind: step.kind,
+              matchCount: violation.matchCount,
+              budget,
+            }).catch((e): DisambiguationResult => ({ ok: false, reason: e instanceof Error ? e.message : String(e) }));
+
+            if (resolved.ok) {
+              try {
+                const { selectorUsed } = await applyStep(page, step, {
+                  locator: resolved.locator,
+                  selectorUsed: resolved.selectorUsed,
+                });
+                steps.push({
+                  action: step.kind,
+                  label,
+                  selectorUsed,
+                  outcome: 'pass',
+                  disambiguated: true,
+                  disambiguationDetail: resolved.selectorUsed,
+                });
+                emit(emitter, {
+                  type: 'step-result',
+                  payload: {
+                    testId: id,
+                    stepIndex,
+                    action: step.kind,
+                    label,
+                    outcome: 'pass',
+                    selectorUsed,
+                    disambiguated: true,
+                    disambiguationDetail: resolved.selectorUsed,
+                  },
+                });
+                continue;
+              } catch (postExc) {
+                // The disambiguated element still failed - report that (a real failure), not
+                // the original strict-mode-violation message.
+                finalExc = postExc;
+              }
+            }
+          }
+        }
+
+        const message = stripAnsi(finalExc instanceof Error ? finalExc.message : String(finalExc));
         // Screenshot the live page at the moment of failure, before context teardown. Best-effort:
         // a failure here (e.g. the page itself crashed) shouldn't mask the original step error.
         const screenshotBuffer = await page.screenshot().catch(() => undefined);
         const screenshot = screenshotBuffer?.toString('base64');
         const screenshotPath = screenshotBuffer ? saveScreenshotFile(runId, id, stepIndex, screenshotBuffer) : undefined;
-        steps.push({ action: step.kind, label, outcome: 'fail', error: message, screenshot, screenshotPath });
+        steps.push({
+          action: step.kind,
+          label,
+          outcome: 'fail',
+          error: message,
+          screenshot,
+          screenshotPath,
+          disambiguationAttempted: disambiguationAttempted || undefined,
+        });
         emit(emitter, {
           type: 'step-result',
-          payload: { testId: id, stepIndex, action: step.kind, label, outcome: 'fail', error: message, screenshot, screenshotPath },
+          payload: {
+            testId: id,
+            stepIndex,
+            action: step.kind,
+            label,
+            outcome: 'fail',
+            error: message,
+            screenshot,
+            screenshotPath,
+            disambiguationAttempted: disambiguationAttempted || undefined,
+          },
         });
         failReason = `Step "${step.kind}" failed after retry: ${message}`;
         break;
@@ -124,6 +205,7 @@ export async function runTestCases(
 ): Promise<TestReport[]> {
   const headless = opts.headless ?? true;
   const totalTests = testCases.length;
+  const budget: DisambiguationBudget = { used: 0, max: opts.maxDisambiguationsPerRun ?? 20 };
 
   emit(emitter, { type: 'run-start', payload: { runId, totalTests } });
 
@@ -133,12 +215,16 @@ export async function runTestCases(
   try {
     browser = await chromium.launch({ headless });
     for (let index = 0; index < testCases.length; index++) {
-      reports.push(await runOne(runId, browser, testCases[index], index, totalTests, emitter));
+      reports.push(await runOne(runId, browser, testCases[index], index, totalTests, emitter, budget));
     }
     const summary = {
       total: reports.length,
       passed: reports.filter((r) => r.outcome === 'PASS').length,
       failed: reports.filter((r) => r.outcome === 'FAIL').length,
+      disambiguatedSteps: reports.reduce(
+        (count, r) => count + r.steps.filter((s) => s.disambiguated).length,
+        0,
+      ),
     };
     emit(emitter, { type: 'run-complete', payload: { runId, summary } });
   } catch (exc) {

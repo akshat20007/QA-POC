@@ -3,7 +3,7 @@
 Generated 5 test cases
 [
   {
-    "name": "Add product to cart and verify cart count and contents",
+    "name": "Add product to cart and verify in cart page",
     "priority": "high",
     "category": "happy-path",
     "steps": [
@@ -31,28 +31,29 @@ Generated 5 test cases
       },
       {
         "type": "when",
-        "action": "click add to cart button",
+        "action": "click add to cart button for Sauce Labs Backpack",
         "target_hint": "button: Add to cart"
       },
       {
         "type": "then",
-        "action": "assert cart badge count is visible",
-        "target_hint": "1"
+        "action": "assert cart badge shows 1",
+        "target_hint": "testid: shopping-cart-badge",
+        "value": "1"
       },
       {
         "type": "when",
         "action": "click cart icon",
-        "target_hint": "css: .shopping_cart_link"
+        "target_hint": "testid: shopping-cart-link"
       },
       {
         "type": "then",
-        "action": "assert product name in cart",
-        "target_hint": "Sauce Labs Backpack"
+        "action": "assert product is listed in cart",
+        "target_hint": "link: Sauce Labs Backpack"
       }
     ]
   },
   {
-    "name": "Add multiple distinct products to cart",
+    "name": "Add multiple products to cart",
     "priority": "medium",
     "category": "happy-path",
     "steps": [
@@ -80,23 +81,24 @@ Generated 5 test cases
       },
       {
         "type": "when",
-        "action": "click add to cart for backpack",
+        "action": "click add to cart button for Sauce Labs Backpack",
         "target_hint": "button: Add to cart"
       },
       {
         "type": "when",
-        "action": "click add to cart for bike light",
+        "action": "click add to cart button for Sauce Labs Bike Light",
         "target_hint": "button: Add to cart"
       },
       {
         "type": "then",
-        "action": "assert cart badge count shows two items",
-        "target_hint": "2"
+        "action": "assert cart badge shows 2",
+        "target_hint": "testid: shopping-cart-badge",
+        "value": "2"
       }
     ]
   },
   {
-    "name": "Toggle product add to cart button to remove state",
+    "name": "Remove product from cart on inventory page",
     "priority": "medium",
     "category": "edge-case",
     "steps": [
@@ -124,64 +126,25 @@ Generated 5 test cases
       },
       {
         "type": "when",
-        "action": "click add to cart button",
-        "target_hint": "button: Add to cart"
-      },
-      {
-        "type": "then",
-        "action": "assert button text changes to remove",
-        "target_hint": "button: Remove"
-      }
-    ]
-  },
-  {
-    "name": "Remove product from cart and verify badge disappears",
-    "priority": "medium",
-    "category": "edge-case",
-    "steps": [
-      {
-        "type": "given",
-        "action": "navigate to login page",
-        "target_hint": "url: /"
-      },
-      {
-        "type": "when",
-        "action": "fill username",
-        "target_hint": "textbox: Username",
-        "value": "standard_user"
-      },
-      {
-        "type": "when",
-        "action": "fill password",
-        "target_hint": "textbox: Password",
-        "value": "secret_sauce"
-      },
-      {
-        "type": "when",
-        "action": "click login button",
-        "target_hint": "button: Login"
-      },
-      {
-        "type": "when",
-        "action": "click add to cart button",
+        "action": "click add to cart button for Sauce Labs Backpack",
         "target_hint": "button: Add to cart"
       },
       {
         "type": "when",
-        "action": "click remove button",
+        "action": "click remove button for Sauce Labs Backpack",
         "target_hint": "button: Remove"
       },
       {
         "type": "then",
         "action": "assert cart badge is absent",
-        "target_hint": "css: .shopping_cart_badge"
+        "target_hint": "testid: shopping-cart-badge"
       }
     ]
   },
   {
-    "name": "Attempt to access cart page when unauthenticated",
-    "priority": "high",
-    "category": "negative",
+    "name": "Add product from product detail page",
+    "priority": "low",
+    "category": "happy-path",
     "steps": [
       {
         "type": "given",
@@ -189,31 +152,87 @@ Generated 5 test cases
         "target_hint": "url: /"
       },
       {
-        "type": "given",
+        "type": "when",
         "action": "fill username",
         "target_hint": "textbox: Username",
         "value": "standard_user"
       },
       {
-        "type": "given",
+        "type": "when",
         "action": "fill password",
         "target_hint": "textbox: Password",
         "value": "secret_sauce"
       },
       {
-        "type": "given",
+        "type": "when",
         "action": "click login button",
         "target_hint": "button: Login"
       },
       {
-        "type": "given",
-        "action": "navigate directly to cart page",
-        "target_hint": "url: /cart.html"
+        "type": "when",
+        "action": "click product link",
+        "target_hint": "link: Sauce Labs Backpack"
+      },
+      {
+        "type": "when",
+        "action": "click add to cart button",
+        "target_hint": "button: Add to cart"
       },
       {
         "type": "then",
-        "action": "assert error message visible",
-        "target_hint": "Epic sadface: You can only access /cart.html when logged in."
+        "action": "assert cart badge shows 1",
+        "target_hint": "testid: shopping-cart-badge",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "name": "Verify cart remains populated after navigating back and forth",
+    "priority": "low",
+    "category": "edge-case",
+    "steps": [
+      {
+        "type": "given",
+        "action": "navigate to login page",
+        "target_hint": "url: /"
+      },
+      {
+        "type": "when",
+        "action": "fill username",
+        "target_hint": "textbox: Username",
+        "value": "standard_user"
+      },
+      {
+        "type": "when",
+        "action": "fill password",
+        "target_hint": "textbox: Password",
+        "value": "secret_sauce"
+      },
+      {
+        "type": "when",
+        "action": "click login button",
+        "target_hint": "button: Login"
+      },
+      {
+        "type": "when",
+        "action": "click add to cart button for Sauce Labs Backpack",
+        "target_hint": "button: Add to cart"
+      },
+      {
+        "type": "when",
+        "action": "click cart icon",
+        "target_hint": "testid: shopping-cart-link"
+      },
+      {
+        "type": "when",
+        "action": "click continue shopping button",
+        "target_hint": "text: Continue Shopping"
+      },
+      {
+        "type": "then",
+        "action": "assert cart badge shows 1",
+        "target_hint": "testid: shopping-cart-badge",
+        "value": "1"
       }
     ]
   }
@@ -230,7 +249,7 @@ Generated 5 test cases
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -252,7 +271,7 @@ Generated 5 test cases
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Username and password do not match any user in this service"
+        "target_hint": "text: Epic sadface: Username and password do not match any user in this service"
       }
     ]
   },
@@ -264,7 +283,7 @@ Generated 5 test cases
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -286,12 +305,12 @@ Generated 5 test cases
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Sorry, this user has been locked out."
+        "target_hint": "text: Epic sadface: Sorry, this user has been locked out."
       }
     ]
   },
   {
-    "name": "Empty username login attempt",
+    "name": "Blank username login attempt",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -320,7 +339,7 @@ Generated 5 test cases
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -336,12 +355,12 @@ Generated 5 test cases
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Username is required"
+        "target_hint": "text: Epic sadface: Username is required"
       }
     ]
   },
   {
-    "name": "Empty password login attempt",
+    "name": "Blank password login attempt",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -370,7 +389,7 @@ Generated 5 test cases
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -386,19 +405,19 @@ Generated 5 test cases
       {
         "type": "then",
         "action": "assert error message visible",
-        "target_hint": "Epic sadface: Password is required"
+        "target_hint": "text: Epic sadface: Password is required"
       }
     ]
   },
   {
-    "name": "Successful login with standard user",
+    "name": "Successful login with valid standard user credentials",
     "priority": "high",
     "category": "happy-path",
     "steps": [
       {
         "type": "given",
         "action": "navigate to login page",
-        "target_hint": "https://www.saucedemo.com/"
+        "target_hint": "url: /"
       },
       {
         "type": "when",
@@ -419,8 +438,8 @@ Generated 5 test cases
       },
       {
         "type": "then",
-        "action": "assert inventory page is displayed",
-        "target_hint": "url: /inventory.html"
+        "action": "assert inventory page loaded",
+        "target_hint": "text: Products"
       }
     ]
   }
@@ -458,18 +477,13 @@ Generated 5 test cases
       },
       {
         "type": "then",
-        "action": "assert redirected to inventory page",
-        "target_hint": "url: /inventory.html"
-      },
-      {
-        "type": "then",
         "action": "assert products heading visible",
-        "target_hint": "Products"
+        "target_hint": "text: Products"
       }
     ]
   },
   {
-    "name": "Failed login with locked out user",
+    "name": "Login fails with locked out user credentials",
     "priority": "high",
     "category": "negative",
     "steps": [
@@ -498,12 +512,12 @@ Generated 5 test cases
       {
         "type": "then",
         "action": "assert locked out error message visible",
-        "target_hint": "Epic sadface: Sorry, this user has been locked out."
+        "target_hint": "text: Epic sadface: Sorry, this user has been locked out."
       }
     ]
   },
   {
-    "name": "Failed login with incorrect password",
+    "name": "Login fails with incorrect password",
     "priority": "high",
     "category": "negative",
     "steps": [
@@ -532,12 +546,12 @@ Generated 5 test cases
       {
         "type": "then",
         "action": "assert credentials mismatch error message visible",
-        "target_hint": "Epic sadface: Username and password do not match any user in this service"
+        "target_hint": "text: Epic sadface: Username and password do not match any user in this service"
       }
     ]
   },
   {
-    "name": "Failed login with empty username and password",
+    "name": "Login fails with missing username and password",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -575,13 +589,13 @@ Generated 5 test cases
       },
       {
         "type": "then",
-        "action": "assert username required error message visible",
-        "target_hint": "Epic sadface: Username is required"
+        "action": "assert missing username error message visible",
+        "target_hint": "text: Epic sadface: Username is required"
       }
     ]
   },
   {
-    "name": "Failed login with empty password",
+    "name": "Login fails with missing password only",
     "priority": "medium",
     "category": "negative",
     "steps": [
@@ -625,8 +639,8 @@ Generated 5 test cases
       },
       {
         "type": "then",
-        "action": "assert password required error message visible",
-        "target_hint": "Epic sadface: Password is required"
+        "action": "assert missing password error message visible",
+        "target_hint": "text: Epic sadface: Password is required"
       }
     ]
   }

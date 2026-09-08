@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "tsx --test src/translator.test.ts",
+    "test": "tsx --test src/translator.test.ts src/disambiguate.test.ts",
     "start": "tsx src/run.ts",
     "negative-control": "tsx src/negative-control.ts",
+    "disambiguation-control": "tsx src/disambiguation-control.ts",
     "server": "tsx src/server.ts",
     "server:dev": "tsx watch src/server.ts"
   },
@@ -17,6 +18,7 @@
     "typescript": "^5.7.0"
   },
   "dependencies": {
+    "@google/genai": "^2.19.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "playwright": "^1.62.1"

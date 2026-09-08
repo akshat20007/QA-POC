@@ -161,11 +161,15 @@ async function startRun(runId: string, testCases: RunnableTestCase[]): Promise<v
 
   // runTestCases never rejects - on failure it emits its own 'error' event and resolves
   // with whatever reports were already completed, so those are never lost here.
-  const reports = await runTestCases(runId, testCases, emitter, { headless: true });
+  const reports = await runTestCases(runId, testCases, emitter, { headless: false });
   const summary = {
     total: reports.length,
     passed: reports.filter((r) => r.outcome === 'PASS').length,
     failed: reports.filter((r) => r.outcome === 'FAIL').length,
+    disambiguatedSteps: reports.reduce(
+      (count, r) => count + r.steps.filter((s) => s.disambiguated).length,
+      0,
+    ),
   };
   completeRun(runId, reports, summary);
   unregisterEmitter(runId);

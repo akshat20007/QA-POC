@@ -49,6 +49,63 @@ test('add_to_cart-shaped case: checkText step uses text: prefix locator', () => 
   ]);
 });
 
+test('testid: prefix resolves to a testid locator (for accessibility-invisible elements)', () => {
+  const testCase: TestCase = {
+    name: 'Open cart',
+    priority: 'high',
+    category: 'happy-path',
+    steps: [
+      { type: 'when', action: 'click shopping cart link', target_hint: 'testid: shopping-cart-link' },
+    ],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.translated, [
+    { kind: 'click', locator: { strategy: 'testid', testId: 'shopping-cart-link' } },
+  ]);
+});
+
+test('checkText step with a testid: hint uses value as the expected text', () => {
+  const testCase: TestCase = {
+    name: 'Cart badge count',
+    priority: 'high',
+    category: 'happy-path',
+    steps: [
+      {
+        type: 'then',
+        action: 'assert cart badge shows 1',
+        target_hint: 'testid: shopping-cart-badge',
+        value: '1',
+      },
+    ],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.translated, [
+    { kind: 'checkText', locator: { strategy: 'testid', testId: 'shopping-cart-badge' }, text: '1' },
+  ]);
+});
+
+test('checkText step with a testid: hint and no value is captured as an error', () => {
+  const testCase: TestCase = {
+    name: 'Cart badge count',
+    priority: 'high',
+    category: 'happy-path',
+    steps: [
+      { type: 'then', action: 'assert cart badge shows 1', target_hint: 'testid: shopping-cart-badge' },
+    ],
+  };
+
+  const result = translateTestCase(testCase);
+
+  assert.equal(result.translated.length, 0);
+  assert.equal(result.errors.length, 1);
+});
+
 test('unrecognized action is captured as an error, not thrown', () => {
   const testCase: TestCase = {
     name: 'Weird case',
