@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Browser, BrowserContext } from 'playwright';
@@ -14,6 +14,35 @@ import type { RunEvent, TestReport } from './apiTypes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCREENSHOTS_DIR = path.join(__dirname, '..', '..', 'output', 'screenshots');
+const TRACES_DIR = path.join(__dirname, '..', '..', 'output', 'traces');
+
+/** How long a failure artifact (screenshot/trace) is kept before a later run prunes it. Overridable
+ * for local debugging via ARTIFACT_RETENTION_DAYS; these are throwaway PoC artifacts, not durable
+ * storage, so unbounded growth (see git history) is the failure mode this guards against. */
+const ARTIFACT_RETENTION_MS = (Number(process.env.ARTIFACT_RETENTION_DAYS) || 7) * 24 * 60 * 60 * 1000;
+
+/** Best-effort deletion of artifact files older than the retention window. Never throws - a
+ * missing directory or an unreadable entry should never block a test run. */
+function pruneOldArtifacts(dir: string): void {
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return;
+  }
+  const cutoff = Date.now() - ARTIFACT_RETENTION_MS;
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry);
+    try {
+      const stat = statSync(fullPath);
+      if (stat.isFile() && stat.mtimeMs < cutoff) {
+        unlinkSync(fullPath);
+      }
+    } catch {
+      // A single bad entry (e.g. removed mid-sweep) shouldn't block the run.
+    }
+  }
+}
 
 function saveScreenshotFile(runId: string, testId: string, stepIndex: number, buffer: Buffer): string {
   mkdirSync(SCREENSHOTS_DIR, { recursive: true });
@@ -71,11 +100,18 @@ async function runOneUi(
 
   const steps: TestReport['steps'] = [];
   let failReason: string | undefined;
+  let tracePath: string | undefined;
   let context: BrowserContext | undefined;
+  let tracingStarted = false;
 
   try {
     context = await browser.newContext({ baseURL: BASE_URL });
     context.setDefaultTimeout(ACTION_TIMEOUT_MS);
+    // Best-effort: a tracing failure (e.g. disk pressure) must not fail the test itself.
+    tracingStarted = await context.tracing
+      .start({ screenshots: true, snapshots: true })
+      .then(() => true)
+      .catch(() => false);
     const page = await context.newPage();
 
     for (let stepIndex = 0; stepIndex < translated.length; stepIndex++) {
@@ -151,6 +187,19 @@ async function runOneUi(
         const screenshotBuffer = await page.screenshot().catch(() => undefined);
         const screenshot = screenshotBuffer?.toString('base64');
         const screenshotPath = screenshotBuffer ? saveScreenshotFile(runId, id, stepIndex, screenshotBuffer) : undefined;
+        // Save the trace covering the whole test up to this failure - stopping tracing here (rather
+        // than in `finally`) is what lets us keep it only for failures and discard it for passes.
+        if (tracingStarted) {
+          mkdirSync(TRACES_DIR, { recursive: true });
+          const traceFileName = `${runId}-${id}-step${stepIndex}.zip`;
+          const traceFullPath = path.join(TRACES_DIR, traceFileName);
+          const saved = await context.tracing
+            .stop({ path: traceFullPath })
+            .then(() => true)
+            .catch(() => false);
+          tracingStarted = false;
+          if (saved) tracePath = path.join('output', 'traces', traceFileName);
+        }
         steps.push({
           action: step.kind,
           label,
@@ -179,12 +228,17 @@ async function runOneUi(
       }
     }
   } finally {
+    // A trace was already stopped-and-saved on failure above; a still-running trace here means
+    // the test passed, so discard it (no `path` given to tracing.stop) rather than keep it forever.
+    if (tracingStarted) {
+      await context?.tracing.stop().catch(() => undefined);
+    }
     await context?.close();
   }
 
   const outcome: 'PASS' | 'FAIL' = failReason ? 'FAIL' : 'PASS';
-  emit(emitter, { type: 'test-end', payload: { testId: id, outcome, reason: failReason } });
-  return { id, name: testCase.name, outcome, steps, reason: failReason };
+  emit(emitter, { type: 'test-end', payload: { testId: id, outcome, reason: failReason, tracePath } });
+  return { id, name: testCase.name, outcome, steps, reason: failReason, tracePath };
 }
 
 /** Runs UI and API test cases in order. Never rejects. */
@@ -197,6 +251,9 @@ export async function runTestCases(
   const headless = opts.headless ?? true;
   const totalTests = testCases.length;
   const budget: DisambiguationBudget = { used: 0, max: opts.maxDisambiguationsPerRun ?? 20 };
+
+  pruneOldArtifacts(SCREENSHOTS_DIR);
+  pruneOldArtifacts(TRACES_DIR);
 
   emit(emitter, { type: 'run-start', payload: { runId, totalTests } });
 

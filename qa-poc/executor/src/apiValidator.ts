@@ -104,5 +104,3 @@ export function getJsonPath(obj: unknown, path: string): unknown {
   }
   return current;
 }
-
-export type { ApiTranslatedStep as ApiStep };

@@ -243,15 +243,3 @@ export function buildPostmanCollection(
     groups,
   };
 }
-
-/** Flat ordered step indices for a test case (request + assertions in execution order). */
-export function flattenStepOrder(groups: ApiStepGroup[]): number[] {
-  const indices: number[] = [];
-  for (const group of groups) {
-    indices.push(group.requestStepIndex);
-    for (const a of group.assertions) {
-      indices.push(a.stepIndex);
-    }
-  }
-  return indices;
-}

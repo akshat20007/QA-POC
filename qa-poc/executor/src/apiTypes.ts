@@ -85,6 +85,9 @@ export interface TestEndPayload {
   testId: string;
   outcome: 'PASS' | 'FAIL';
   reason?: string;
+  /** Path (relative to qa-poc/) of the Playwright trace captured for this test. Only set when
+   * outcome is 'FAIL' - traces for passing tests are discarded to avoid unbounded disk growth. */
+  tracePath?: string;
 }
 
 export interface RunStartPayload {
@@ -144,6 +147,9 @@ export interface TestReport {
   outcome: 'PASS' | 'FAIL';
   steps: StepReport[];
   reason?: string;
+  /** Path (relative to qa-poc/) of the Playwright trace captured for this test. Only set when
+   * outcome is 'FAIL' - traces for passing tests are discarded to avoid unbounded disk growth. */
+  tracePath?: string;
 }
 
 export interface RunReportResponse {
