@@ -1,4 +1,5 @@
 import type { TestStatus } from '../state/AppStateContext';
+import type { StoryType } from '../api/types';
 import { StepOutcomeBadge } from './Badge';
 import { RunningDotIcon } from './icons';
 
@@ -13,7 +14,16 @@ export interface DisplayStep {
 }
 
 /** Read-only step list for the Execution and Report stages (see design.md's step-list row pattern). */
-export function StepList({ steps, status }: { steps: DisplayStep[]; status?: TestStatus }) {
+export function StepList({
+  steps,
+  status,
+  storyType = 'ui',
+}: {
+  steps: DisplayStep[];
+  status?: TestStatus;
+  storyType?: StoryType;
+}) {
+  const detailLabel = storyType === 'api' ? 'HTTP' : 'Selector';
   if (steps.length === 0 && status !== 'running') {
     return <p className="text-xs text-slate-400">Not started yet.</p>;
   }
@@ -28,7 +38,7 @@ export function StepList({ steps, status }: { steps: DisplayStep[]; status?: Tes
           </div>
           {step.selectorUsed && (
             <p className="mt-1 truncate font-mono text-xs text-slate-500" title={step.selectorUsed}>
-              {step.selectorUsed}
+              {detailLabel}: {step.selectorUsed}
             </p>
           )}
           {step.error && (

@@ -43,6 +43,15 @@ Every status must be paired with an icon or text label — never color alone (se
 | Category: edge-case | `amber-600` / `amber-50` |
 | Category: negative | `red-600` / `red-50` |
 
+### Story-type accent colors (per-story, not global theme)
+
+The shell stays neutral slate. UI and API stories get per-story accents on badges, card borders, and group headers.
+
+| Story type | Badge / text | Border / stripe | Group header bg |
+|---|---|---|---|
+| UI | `indigo-600` / `indigo-50` | `border-l-indigo-500` | `bg-indigo-50/50 border-indigo-200` |
+| API | `teal-600` / `teal-50` | `border-l-teal-500` | `bg-teal-50/50 border-teal-200` |
+
 ### Typography scale
 
 Font: Tailwind's default system-ui sans stack (no webfont — zero load cost, native feel).

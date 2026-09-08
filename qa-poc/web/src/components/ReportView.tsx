@@ -1,16 +1,17 @@
 import type { IdentifiedTestCase } from '../api/types';
 import type { RunReportResponse } from '../api/types';
 import { Card, CardHeader, CardBody } from './Card';
-import { PriorityBadge, CategoryBadge, StepOutcomeBadge } from './Badge';
+import { PriorityBadge, CategoryBadge, StepOutcomeBadge, StoryTypeBadge } from './Badge';
 import { CheckIcon, XIcon } from './icons';
+import { accentFor } from '../theme/storyAccent';
 
 function humanizeReason(reason: string | undefined): string | undefined {
   if (!reason) return undefined;
   if (reason.includes('strict mode violation')) {
     return 'Multiple matching elements were found on the page — the selector was ambiguous (e.g. a button that appears once per item in a list).';
   }
-  if (reason.includes('Translation failed')) {
-    return 'One of the steps could not be translated into a Playwright action — see the step detail below.';
+  if (reason.includes('Translation failed') || reason.includes('Validation failed')) {
+    return 'One of the steps could not be translated — see the step detail below.';
   }
   if (reason.toLowerCase().includes('timeout')) {
     return 'The expected element never appeared in time — it may not exist on the page, or a previous step left the page in an unexpected state.';
@@ -19,7 +20,7 @@ function humanizeReason(reason: string | undefined): string | undefined {
 }
 
 export function ReportView({ report, testCases }: { report: RunReportResponse; testCases: IdentifiedTestCase[] }) {
-  const metaById = new Map(testCases.map((tc) => [tc.id, tc.testCase]));
+  const metaById = new Map(testCases.map((tc) => [tc.id, tc]));
   const summary = report.summary ?? {
     total: report.reports.length,
     passed: report.reports.filter((r) => r.outcome === 'PASS').length,
@@ -51,12 +52,18 @@ export function ReportView({ report, testCases }: { report: RunReportResponse; t
       </Card>
 
       {report.reports.map((r) => {
-        const meta = metaById.get(r.id);
+        const identified = metaById.get(r.id);
+        const meta = identified?.testCase;
+        const storyType = identified?.storyType ?? 'ui';
+        const accent = accentFor(storyType);
+        const detailLabel = storyType === 'api' ? 'HTTP' : 'Selector';
+
         return (
-          <Card key={r.id}>
+          <Card key={r.id} className={accent.stripe}>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-semibold text-slate-900">{r.name}</h3>
+                <StoryTypeBadge storyType={storyType} />
                 {meta && (
                   <>
                     <PriorityBadge priority={meta.priority} />
@@ -86,7 +93,7 @@ export function ReportView({ report, testCases }: { report: RunReportResponse; t
                     </div>
                     {step.selectorUsed && (
                       <p className="mt-1 truncate font-mono text-xs text-slate-500" title={step.selectorUsed}>
-                        {step.selectorUsed}
+                        {detailLabel}: {step.selectorUsed}
                       </p>
                     )}
                     {step.error && (
@@ -118,10 +125,9 @@ export function ReportView({ report, testCases }: { report: RunReportResponse; t
       <Card className="border-slate-200 bg-slate-50">
         <CardBody>
           <p className="text-xs text-slate-500">
-            <strong className="text-slate-600">Note on preconditions:</strong> some stories imply an existing state (e.g.
-            "add a product to cart" assumes you're already logged in). Generation automatically prepends a login sequence
-            unless the story's own steps already handle login — this heuristic isn't perfect, so a test case may still
-            fail here for a reason unrelated to selector accuracy if the wrong precondition was assumed.
+            <strong className="text-slate-600">Note on preconditions:</strong> UI stories may have login steps prepended
+            automatically unless the story handles login itself. API stories run against the configured base URL (default
+            ReqRes).
           </p>
         </CardBody>
       </Card>

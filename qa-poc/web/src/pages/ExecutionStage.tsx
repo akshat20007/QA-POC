@@ -45,7 +45,7 @@ export function ExecutionStage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">3. Execution in progress</h2>
-        <p className="mt-1 text-sm text-slate-500">Watching each test case run against the live site in real time.</p>
+        <p className="mt-1 text-sm text-slate-500">Watching each test case run in real time — UI tests in Playwright, API tests via HTTP.</p>
       </div>
       {state.runError && (
         <div className="flex items-center justify-between gap-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -55,7 +55,7 @@ export function ExecutionStage() {
           </Button>
         </div>
       )}
-      <ProgressView testOrder={state.testOrder} liveProgress={state.liveProgress} />
+      <ProgressView testOrder={state.testOrder} liveProgress={state.liveProgress} testCases={state.testCases} />
     </div>
   );
 }

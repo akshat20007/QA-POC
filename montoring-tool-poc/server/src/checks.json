@@ -1,0 +1,18 @@
+[
+  {
+    "id": "saucedemo-login",
+    "name": "Sauce Demo Login",
+    "type": "ui",
+    "intervalMinutes": 60,
+    "scriptPath": "checks/saucedemo-login.spec.ts",
+    "enabled": true
+  },
+  {
+    "id": "reqres-health",
+    "name": "ReqRes Health",
+    "type": "api",
+    "intervalMinutes": 60,
+    "scriptPath": "checks/reqres-health.spec.ts",
+    "enabled": true
+  }
+]

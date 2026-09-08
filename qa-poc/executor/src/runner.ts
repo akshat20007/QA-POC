@@ -8,16 +8,13 @@ import { translateTestCase } from './translator.js';
 import { applyStep, withRetry, BASE_URL, ACTION_TIMEOUT_MS } from './executor.js';
 import { disambiguate, isStrictModeViolation } from './disambiguate.js';
 import type { DisambiguationBudget, DisambiguationResult } from './disambiguate.js';
-import type { TestCase } from './types.js';
+import { runOneApi } from './apiRunner.js';
+import type { StoryType, TestCase } from './types.js';
 import type { RunEvent, TestReport } from './apiTypes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// qa-poc/output/ - same directory generate.py and run.ts already use (src -> executor -> qa-poc -> output).
 const SCREENSHOTS_DIR = path.join(__dirname, '..', '..', 'output', 'screenshots');
 
-/** Persists a failed step's screenshot to disk (used by both the CLI and the web-server run
- * paths, since both go through runTestCases). runId is included in the filename so re-running
- * the same test case (same id, new run) doesn't overwrite an earlier run's screenshot. */
 function saveScreenshotFile(runId: string, testId: string, stepIndex: number, buffer: Buffer): string {
   mkdirSync(SCREENSHOTS_DIR, { recursive: true });
   const fileName = `${runId}-${testId}-step${stepIndex}.png`;
@@ -28,6 +25,7 @@ function saveScreenshotFile(runId: string, testId: string, stepIndex: number, bu
 export interface RunnableTestCase {
   id: string;
   testCase: TestCase;
+  storyType: StoryType;
 }
 
 export interface RunnerOptions {
@@ -42,15 +40,13 @@ function emit(emitter: EventEmitter, event: RunEvent): void {
   emitter.emit('event', event);
 }
 
-// eslint-disable-next-line no-control-regex
 const ANSI_ESCAPE_PATTERN = /\x1b\[[0-9;]*m/g;
 
-/** Playwright error messages carry ANSI color codes meant for terminal output; strip them for HTML/JSON display. */
 function stripAnsi(text: string): string {
   return text.replace(ANSI_ESCAPE_PATTERN, '');
 }
 
-async function runOne(
+async function runOneUi(
   runId: string,
   browser: Browser,
   item: RunnableTestCase,
@@ -188,15 +184,10 @@ async function runOne(
 
   const outcome: 'PASS' | 'FAIL' = failReason ? 'FAIL' : 'PASS';
   emit(emitter, { type: 'test-end', payload: { testId: id, outcome, reason: failReason } });
-
   return { id, name: testCase.name, outcome, steps, reason: failReason };
 }
 
-/** Runs a list of test cases against one shared browser, emitting progress events as it goes.
- * Never rejects: any failure (browser launch, an unexpected per-test crash) is reported via
- * an 'error' event, and whatever reports were already completed are still returned rather
- * than discarded - callers should never see a run's earlier passes vanish because a later
- * test crashed instead of merely failing. */
+/** Runs UI and API test cases in order. Never rejects. */
 export async function runTestCases(
   runId: string,
   testCases: RunnableTestCase[],
@@ -213,10 +204,19 @@ export async function runTestCases(
   let browser: Browser | undefined;
 
   try {
-    browser = await chromium.launch({ headless });
-    for (let index = 0; index < testCases.length; index++) {
-      reports.push(await runOne(runId, browser, testCases[index], index, totalTests, emitter, budget));
+    if (testCases.some((tc) => tc.storyType === 'ui')) {
+      browser = await chromium.launch({ headless });
     }
+
+    for (let index = 0; index < testCases.length; index++) {
+      const item = testCases[index];
+      if (item.storyType === 'api') {
+        reports.push(await runOneApi(item.id, item.testCase, index, totalTests, emitter));
+      } else {
+        reports.push(await runOneUi(runId, browser!, item, index, totalTests, emitter, budget));
+      }
+    }
+
     const summary = {
       total: reports.length,
       passed: reports.filter((r) => r.outcome === 'PASS').length,

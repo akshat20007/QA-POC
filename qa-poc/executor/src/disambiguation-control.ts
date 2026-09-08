@@ -109,10 +109,15 @@ async function runRealAddToCartCheck(): Promise<boolean | null> {
     return null;
   }
 
-  const parsed = JSON.parse(readFileSync(file, 'utf-8')) as TestCase | TestCase[];
-  const testCases = Array.isArray(parsed) ? parsed : [parsed];
+  const parsed = JSON.parse(readFileSync(file, 'utf-8')) as TestCase | TestCase[] | { testCases?: TestCase[] };
+  const testCases = Array.isArray(parsed)
+    ? parsed
+    : 'testCases' in parsed && Array.isArray(parsed.testCases)
+      ? parsed.testCases
+      : [parsed as TestCase];
   const runnable: RunnableTestCase[] = testCases.map((testCase, i) => ({
     id: testCases.length > 1 ? `add_to_cart_${i + 1}` : 'add_to_cart',
+    storyType: 'ui',
     testCase,
   }));
 

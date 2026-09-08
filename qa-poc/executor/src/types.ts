@@ -1,3 +1,5 @@
+export type StoryType = 'ui' | 'api';
+
 export type StepType = 'given' | 'when' | 'then';
 
 export interface TestStep {

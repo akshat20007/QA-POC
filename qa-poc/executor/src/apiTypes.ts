@@ -1,10 +1,11 @@
-import type { TestCase, TestStep, TranslationError } from './types.js';
+import type { StoryType, TestCase, TestStep, TranslationError } from './types.js';
 
-export type { TestCase, TestStep, TranslationError };
+export type { StoryType, TestCase, TestStep, TranslationError };
 
 export interface IdentifiedTestCase {
   id: string;
   testCase: TestCase;
+  storyType: StoryType;
   /** Which submitted story (by index) generated this test case; undefined for manually added ones. Display-only. */
   storyIndex?: number;
   /** Short preview of that story's text, for grouping headers in the Review UI. Display-only. */
@@ -20,7 +21,7 @@ export type GenerationErrorType =
   | 'unknown';
 
 export type GenerateStoryResult =
-  | { storyIndex: number; story: string; status: 'ok'; testCases: IdentifiedTestCase[] }
+  | { storyIndex: number; story: string; status: 'ok'; storyType: StoryType; testCases: IdentifiedTestCase[] }
   | { storyIndex: number; story: string; status: 'error'; error: string; errorType: GenerationErrorType };
 
 export interface GenerateRequest {

@@ -5,6 +5,7 @@ import type {
   RunEvent,
   RunReportResponse,
   GenerateStoryResult,
+  StoryType,
 } from '../api/types';
 
 export type Stage = 'input' | 'review' | 'execution' | 'report';
@@ -22,6 +23,7 @@ export interface LiveTestProgress {
 export interface AppState {
   stage: Stage;
   stories: string[];
+  storyTypes: Record<number, StoryType>;
   testCases: IdentifiedTestCase[];
   generationErrors: Array<{ storyIndex: number; story: string; error: string; errorType: string }>;
   runId: string | null;
@@ -54,6 +56,7 @@ type Action =
 const initialState: AppState = {
   stage: 'input',
   stories: [''],
+  storyTypes: {},
   testCases: [],
   generationErrors: [],
   runId: null,
@@ -69,11 +72,18 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, stories: action.stories };
 
     case 'GENERATION_COMPLETE': {
+      const storyTypes: Record<number, StoryType> = {};
+      for (const r of action.results) {
+        if (r.status === 'ok') {
+          storyTypes[r.storyIndex] = r.storyType;
+        }
+      }
       const testCases: IdentifiedTestCase[] = action.results
         .filter((r): r is Extract<GenerateStoryResult, { status: 'ok' }> => r.status === 'ok')
         .flatMap((r) =>
           r.testCases.map((tc) => ({
             ...tc,
+            storyType: r.storyType,
             storyIndex: r.storyIndex,
             storyPreview: r.story.trim().slice(0, 80),
           })),
@@ -81,7 +91,7 @@ function reducer(state: AppState, action: Action): AppState {
       const generationErrors = action.results
         .filter((r): r is Extract<GenerateStoryResult, { status: 'error' }> => r.status === 'error')
         .map((r) => ({ storyIndex: r.storyIndex, story: r.story, error: r.error, errorType: r.errorType }));
-      return { ...state, testCases, generationErrors, stage: 'review' };
+      return { ...state, testCases, storyTypes, generationErrors, stage: 'review' };
     }
 
     case 'UPDATE_TEST_CASE':
@@ -93,7 +103,7 @@ function reducer(state: AppState, action: Action): AppState {
     case 'ADD_TEST_CASE':
       return {
         ...state,
-        testCases: [...state.testCases, { id: crypto.randomUUID(), testCase: blankTestCase() }],
+        testCases: [...state.testCases, { id: crypto.randomUUID(), storyType: 'ui', testCase: blankTestCase() }],
       };
 
     case 'DELETE_TEST_CASE':
@@ -186,6 +196,7 @@ interface PersistedState {
   stage: Stage;
   runId: string | null;
   stories: string[];
+  storyTypes: Record<number, StoryType>;
   testCases: IdentifiedTestCase[];
 }
 
@@ -193,7 +204,15 @@ function loadPersisted(): Partial<AppState> | undefined {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return undefined;
-    return JSON.parse(raw) as PersistedState;
+    const parsed = JSON.parse(raw) as PersistedState;
+    return {
+      ...parsed,
+      storyTypes: parsed.storyTypes ?? {},
+      testCases: (parsed.testCases ?? []).map((tc) => ({
+        ...tc,
+        storyType: tc.storyType ?? 'ui',
+      })),
+    };
   } catch {
     return undefined;
   }
@@ -205,6 +224,7 @@ function savePersisted(state: AppState): void {
       stage: state.stage,
       runId: state.runId,
       stories: state.stories,
+      storyTypes: state.storyTypes,
       testCases: state.testCases,
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
@@ -228,7 +248,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     savePersisted(state);
-  }, [state.stage, state.runId, state.stories, state.testCases]);
+  }, [state.stage, state.runId, state.stories, state.storyTypes, state.testCases]);
 
   return <AppStateContext.Provider value={{ state, dispatch }}>{children}</AppStateContext.Provider>;
 }

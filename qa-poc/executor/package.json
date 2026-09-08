@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "tsx --test src/translator.test.ts src/disambiguate.test.ts",
+    "test": "tsx --test src/translator.test.ts src/disambiguate.test.ts src/apiValidator.test.ts src/postmanBuilder.test.ts",
     "start": "tsx src/run.ts",
     "negative-control": "tsx src/negative-control.ts",
     "disambiguation-control": "tsx src/disambiguation-control.ts",
@@ -21,6 +21,8 @@
     "@google/genai": "^2.19.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "newman": "^6.2.1",
+    "picocolors": "^1.1.1",
     "playwright": "^1.62.1"
   }
 }
