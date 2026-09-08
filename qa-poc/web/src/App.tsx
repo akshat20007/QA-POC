@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAppState, resetSession } from './state/AppStateContext';
 import { Layout } from './components/Layout';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { InputStage } from './pages/InputStage';
 import { ReviewStage } from './pages/ReviewStage';
 import { ExecutionStage } from './pages/ExecutionStage';
@@ -50,10 +51,17 @@ export default function App() {
           <code className="font-mono">qa-poc/.env</code>.
         </div>
       )}
-      {state.stage === 'input' && <InputStage />}
-      {state.stage === 'review' && <ReviewStage />}
-      {state.stage === 'execution' && <ExecutionStage />}
-      {state.stage === 'report' && <ReportStage />}
+      <ErrorBoundary
+        onReset={() => {
+          resetSession();
+          dispatch({ type: 'RESET' });
+        }}
+      >
+        {state.stage === 'input' && <InputStage />}
+        {state.stage === 'review' && <ReviewStage />}
+        {state.stage === 'execution' && <ExecutionStage />}
+        {state.stage === 'report' && <ReportStage />}
+      </ErrorBoundary>
     </Layout>
   );
 }

@@ -1,0 +1,11 @@
+{
+  "name": "qa-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n executor,web -c blue,green \"npm run server --prefix executor\" \"npm run dev --prefix web\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
