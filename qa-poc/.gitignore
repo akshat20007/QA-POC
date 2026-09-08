@@ -4,3 +4,6 @@ __pycache__/
 node_modules/
 dist/
 *.tsbuildinfo
+output/screenshots/
+output/manual-verification/
+output/execution-results.log
